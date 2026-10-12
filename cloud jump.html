@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Jumper & Sky Canvas - Unique Neon Characters</title>
+    <!-- Tailwind CSS for modern UI layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for friendly, playful typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            overflow: hidden;
+        }
+        .title-font {
+            font-family: 'Fredoka One', cursive;
+        }
+        canvas {
+            display: block;
+            touch-action: none;
+        }
+        @keyframes float-slow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(1.5deg); }
+        }
+        .animate-float {
+            animation: float-slow 3.2s ease-in-out infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { filter: drop-shadow(0 0 12px rgba(255, 100, 255, 0.9)); }
+            50% { filter: drop-shadow(0 0 25px rgba(0, 255, 255, 1)); }
+        }
+        .animate-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 h-screen w-screen flex flex-col items-center justify-center relative overflow-hidden">
+
+    <div id="game-container" class="relative z-10 w-full h-full max-w-5xl max-h-[96vh] flex flex-col items-center justify-center p-2 sm:p-4">
+        
+        <!-- HUD Header -->
+        <div id="hud" class="w-full flex justify-between items-center px-4 py-2 bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 text-white shadow-xl mb-2 hidden">
+            <div class="flex items-center gap-3">
+                <div id="hud-avatar-box" class="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-400 to-purple-600 border-2 border-white/80 flex items-center justify-center shadow-lg relative overflow-hidden">
+                    <canvas id="hudAvatarCanvas" width="48" height="48" class="w-full h-full"></canvas>
+                </div>
+                <div>
+                    <div id="hud-name" class="title-font text-base sm:text-lg text-yellow-300 drop-shadow">Foxy</div>
+                    <div id="hud-type" class="text-xs text-pink-200 font-semibold tracking-wider">Super Jumper</div>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4 sm:gap-8">
+                <div class="text-center">
+                    <div class="text-[10px] sm:text-xs text-purple-200 uppercase tracking-widest font-bold">Altitude Score</div>
+                    <div id="score-display" class="title-font text-xl sm:text-2xl text-yellow-300 drop-shadow">0 m</div>
+                </div>
+                <div class="hidden sm:flex flex-col items-center">
+                    <div class="text-[10px] text-pink-200 uppercase tracking-widest font-bold mb-1">Sky Brush</div>
+                    <div class="flex items-center gap-1.5 bg-black/30 p-1.5 rounded-full border border-white/20">
+                        <button onclick="changeTrailColor('#ff3366')" class="w-5 h-5 rounded-full bg-rose-500 border-2 border-white hover:scale-125 transition-transform" title="Rose Pink"></button>
+                        <button onclick="changeTrailColor('#ff9900')" class="w-5 h-5 rounded-full bg-amber-400 border-2 border-white hover:scale-125 transition-transform" title="Sunburst Orange"></button>
+                        <button onclick="changeTrailColor('#33ccff')" class="w-5 h-5 rounded-full bg-cyan-400 border-2 border-white hover:scale-125 transition-transform" title="Sky Blue"></button>
+                        <button onclick="changeTrailColor('#33ff99')" class="w-5 h-5 rounded-full bg-emerald-400 border-2 border-white hover:scale-125 transition-transform" title="Mint Sparkle"></button>
+                        <button onclick="changeTrailColor('#cc33ff')" class="w-5 h-5 rounded-full bg-purple-500 border-2 border-white hover:scale-125 transition-transform" title="Magic Violet"></button>
+                        <button onclick="changeTrailColor('rainbow')" class="w-5 h-5 rounded-full bg-gradient-to-r from-red-500 via-green-500 to-blue-500 border-2 border-white hover:scale-125 transition-transform" title="Rainbow Brush"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="toggleMusic()" id="music-btn" class="w-10 h-10 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 flex items-center justify-center text-lg transition-all shadow-md" title="Toggle Music">🎵</button>
+                <button onclick="toggleSound()" id="sound-btn" class="w-10 h-10 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 flex items-center justify-center text-lg transition-all shadow-md" title="Toggle SFX">🔊</button>
+                <button onclick="returnToMenu()" class="w-10 h-10 rounded-xl bg-rose-500/80 hover:bg-rose-600 border border-white/30 flex items-center justify-center text-lg transition-all shadow-md" title="Main Menu">🏠</button>
+            </div>
+        </div>
+
+        <div id="canvas-wrapper" class="relative w-full flex-1 rounded-3xl overflow-hidden border-4 border-white/30 shadow-2xl bg-slate-900">
+            <canvas id="gameCanvas" class="w-full h-full block cursor-pointer"></canvas>
+
+            <div id="menu-overlay" class="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-purple-950/95 to-indigo-950/95 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 text-center z-20 overflow-y-auto">
+                
+                <div class="animate-float mt-2">
+                    <h1 class="title-font text-2xl sm:text-4xl lg:text-5xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-300 to-cyan-300 drop-shadow-lg">
+                        Cloud Jumper & Sky Canvas
+                    </h1>
+                    <p class="text-pink-200 text-xs sm:text-sm font-semibold max-w-lg mx-auto mt-1">
+                        Select your completely unique glowing animal friend and take flight!
+                    </p>
+                </div>
+
+                <div class="w-full max-w-3xl my-3 bg-white/10 border border-white/20 rounded-2xl p-3 sm:p-4 backdrop-blur-md shadow-2xl">
+                    <div class="text-xs uppercase tracking-widest text-yellow-300 font-bold mb-2 flex items-center justify-center gap-2">
+                        <span>✨ Select Unique Glowing Character ✨[cite: 4, 5, 6, 7]</span>
+                    </div>
+                    <div id="character-select" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-3 max-h-[48vh] overflow-y-auto p-1"></div>
+                </div>
+
+                <div class="mb-2 flex flex-col sm:flex-row gap-3 items-center">
+                    <button onclick="startGame()" class="title-font px-8 py-3.5 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-500 hover:from-pink-600 hover:to-cyan-600 text-white text-lg sm:text-xl rounded-2xl shadow-xl border-2 border-white/50 transform hover:scale-105 active:scale-95 transition-all animate-glow cursor-pointer flex items-center gap-2">
+                        <span>🚀 Start Glowing Adventure!</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="gameover-overlay" class="absolute inset-0 bg-black/75 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center z-20 hidden">
+                <div class="text-6xl mb-2 animate-bounce">✨🐾</div>
+                <h2 class="title-font text-3xl sm:text-4xl text-yellow-300 mb-1 drop-shadow">Great Jumping!</h2>
+                <p class="text-pink-200 text-sm mb-4">You soared so high into the colorful sky!</p>
+                
+                <div class="bg-white/10 border border-white/20 rounded-2xl p-4 mb-6 w-72 backdrop-blur-sm shadow-xl">
+                    <div class="text-xs text-purple-200 uppercase font-bold">Highest Altitude</div>
+                    <div id="final-score" class="title-font text-4xl text-yellow-300 my-1">0 m</div>
+                    <div class="text-xs text-pink-300" id="high-score-text">Best Record: 0 m</div>
+                </div>
+
+                <div class="flex gap-4">
+                    <button onclick="startGame()" class="title-font px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 hover:opacity-90 text-white rounded-xl shadow-lg border border-white/40 transform hover:scale-105 transition-all cursor-pointer">
+                        🔄 Jump Again
+                    </button>
+                    <button onclick="returnToMenu()" class="title-font px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-xl shadow-lg border border-white/40 transform hover:scale-105 transition-all cursor-pointer">
+                        🏠 Characters
+                    </button>
+                </div>
+            </div>
+
+            <div id="controls-hint" class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md px-4 py-1.5 rounded-full text-white/90 text-xs sm:text-sm border border-white/20 pointer-events-none transition-opacity duration-500 z-10">
+                <span>✨ Enjoy Enhanced Moving & Teleporting Clouds!</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.sfxMuted = false;
+                this.musicMuted = false;
+                this.musicTimer = null;
+                this.noteIndex = 0;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContextClass();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playTone(freq, type, duration, gainVal = 0.2, rampFreq = null) {
+                if (this.sfxMuted) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, now);
+                if (rampFreq) {
+                    osc.frequency.exponentialRampToValueAtTime(rampFreq, now + duration);
+                }
+
+                gain.gain.setValueAtTime(gainVal, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + duration);
+            }
+
+            playJump() { this.playTone(320, 'sine', 0.18, 0.25, 750); }
+            playDoubleJump() { this.playTone(450, 'triangle', 0.22, 0.3, 950); }
+            playSuperJump() { this.playTone(350, 'triangle', 0.35, 0.3, 1100); }
+            playCollect() { 
+                this.playTone(523.25, 'sine', 0.1, 0.2); 
+                setTimeout(() => this.playTone(659.25, 'sine', 0.15, 0.2), 60); 
+                setTimeout(() => this.playTone(783.99, 'sine', 0.2, 0.2), 120); 
+            }
+            playPowerup() { this.playTone(400, 'sawtooth', 0.4, 0.25, 1200); }
+            playPortal() { this.playTone(700, 'sine', 0.5, 0.3, 300); }
+            playHazard() { this.playTone(150, 'sawtooth', 0.3, 0.3, 60); }
+            playFall() { this.playTone(300, 'sawtooth', 0.45, 0.2, 70); }
+
+            startMusic() {
+                if (this.musicTimer) return;
+                const melody = [261.63, 329.63, 392.00, 523.25, 440.00, 349.23, 392.00, 293.66];
+                this.musicTimer = setInterval(() => {
+                    if (!this.musicMuted && gameState === 'PLAYING') {
+                        this.init();
+                        const freq = melody[this.noteIndex % melody.length];
+                        this.playTone(freq, 'sine', 0.3, 0.05);
+                        this.noteIndex++;
+                    }
+                }, 400);
+            }
+
+            stopMusic() {
+                if (this.musicTimer) {
+                    clearInterval(this.musicTimer);
+                    this.musicTimer = null;
+                }
+            }
+        }
+
+        const sound = new SoundEngine();
+        function toggleSound() {
+            sound.sfxMuted = !sound.sfxMuted;
+            document.getElementById('sound-btn').innerText = sound.sfxMuted ? '🔇' : '🔊';
+        }
+        function toggleMusic() {
+            sound.musicMuted = !sound.musicMuted;
+            document.getElementById('music-btn').innerText = sound.musicMuted ? '🔇' : '🎵';
+            if (!sound.musicMuted) sound.startMusic();
+        }
+
+        const CHARACTERS = [
+            { id: 'fox', name: 'Foxy', type: 'Swift Hopper', bodyColor: '#ff7722', glowColor: '#ffaa44', bellyColor: '#fff5ea', eyeColor: '#2277bb', tailType: 'fluffy_fox', ears: 'pointed' },
+            { id: 'tiger', name: 'Tiggy', type: 'Super Bouncer', bodyColor: '#ff8811', glowColor: '#ffcc00', bellyColor: '#fff8eb', eyeColor: '#22aaff', hasStripes: true, tailType: 'curved_stripes', ears: 'round_pink' },
+            { id: 'elephant', name: 'Ellie', type: 'Floaty Giant', bodyColor: '#88bbee', glowColor: '#38bdf8', bellyColor: '#dbeeff', eyeColor: '#114488', hasTrunk: true, tailType: 'thin_tuft', ears: 'floppy_elephant' },
+            { id: 'raccoon', name: 'Rocky', type: 'Star Collector', bodyColor: '#778899', glowColor: '#94a3b8', bellyColor: '#f0f4f8', eyeColor: '#115599', hasMask: true, tailType: 'ringed_raccoon', ears: 'pointed' },
+            { id: 'deer', name: 'Bambi', type: 'Graceful Jumper', bodyColor: '#cc7733', glowColor: '#fb923c', bellyColor: '#fff0e0', eyeColor: '#332211', hasAntlers: true, tailType: 'short_deer', ears: 'leaf_deer' },
+            { id: 'cheetah', name: 'Spotty', type: 'Speed Leaper', bodyColor: '#ffaa33', glowColor: '#fde047', bellyColor: '#fff5e0', eyeColor: '#0088cc', hasSpotsBlack: true, tailType: 'long_spotted', ears: 'round_pink' },
+            { id: 'alligator', name: 'Gator', type: 'Cloud Sprinter', bodyColor: '#44bb44', glowColor: '#4ade80', bellyColor: '#ccff88', eyeColor: '#0088ff', isGator: true, tailType: 'spiky_gator', ears: 'none' },
+            { id: 'bear', name: 'Bubba', type: 'Power Bouncer', bodyColor: '#bb6633', glowColor: '#d97706', bellyColor: '#ffe8d0', eyeColor: '#2266aa', tailType: 'nong_bear', ears: 'round_bear' },
+            { id: 'lion', name: 'Leo', type: 'Royal Glider', bodyColor: '#ffbb33', glowColor: '#facc15', bellyColor: '#fff8dc', eyeColor: '#0077bb', hasTuftTail: true, tailType: 'lion_tuft', ears: 'round_pink' },
+            { id: 'lemur', name: 'Ringtail', type: 'Sky Acrobat', bodyColor: '#9999aa', glowColor: '#c084fc', bellyColor: '#ffffff', eyeColor: '#0099ff', hasEyeMask: true, tailType: 'ringed_lemur', ears: 'pointy_lemur' },
+            { id: 'squirrel', name: 'Nutty', type: 'Nut Collector', bodyColor: '#995522', glowColor: '#ea580c', bellyColor: '#ffe0cc', eyeColor: '#0077cc', hasNut: true, tailType: 'giant_squirrel', ears: 'tufted' },
+            { id: 'wolf', name: 'Lupo', type: 'High Soarer', bodyColor: '#7788aa', glowColor: '#818cf8', bellyColor: '#eef2f7', eyeColor: '#0088ff', hasWolfMask: true, tailType: 'bushy_wolf', ears: 'pointed_wolf' }
+        ];
+
+        let selectedChar = CHARACTERS[0];
+
+        function drawFullBodyCharacter(ctx, char, scale = 1, animFrame = 0, squish = 1) {
+            ctx.save();
+            ctx.scale(scale / squish, scale * squish);
+
+            ctx.shadowColor = char.glowColor || '#ffffff';
+            ctx.shadowBlur = 18;
+
+            const walkCycle = Math.sin(animFrame * 0.2);
+            const tailWag = Math.sin(animFrame * 0.15) * 0.25;
+
+            ctx.save();
+            ctx.rotate(tailWag);
+            if (char.tailType === 'fluffy_fox' || char.tailType === 'bushy_wolf') {
+                ctx.fillStyle = char.bodyColor;
+                ctx.beginPath();
+                ctx.moveTo(10, 10);
+                ctx.quadraticCurveTo(35, 10, 40, -15);
+                ctx.quadraticCurveTo(30, -35, 10, -15);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.moveTo(28, -22);
+                ctx.quadraticCurveTo(40, -15, 30, -5);
+                ctx.quadraticCurveTo(20, -15, 28, -22);
+                ctx.fill();
+            } else if (char.tailType === 'ringed_raccoon' || char.tailType === 'ringed_lemur') {
+                ctx.strokeStyle = char.bodyColor;
+                ctx.lineWidth = 12;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(10, 10);
+                ctx.quadraticCurveTo(40, 20, 30, -25);
+                ctx.stroke();
+                ctx.strokeStyle = '#222222';
+                ctx.lineWidth = 10;
+                ctx.setLineDash([6, 8]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            } else if (char.tailType === 'spiky_gator') {
+                ctx.fillStyle = char.bodyColor;
+                ctx.beginPath();
+                ctx.moveTo(10, 10);
+                ctx.quadraticCurveTo(35, 20, 45, 15);
+                ctx.quadraticCurveTo(25, 0, 10, 5);
+                ctx.fill();
+            } else {
+                ctx.strokeStyle = char.bodyColor;
+                ctx.lineWidth = 8;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(10, 10);
+                ctx.quadraticCurveTo(30, 20, 35, -10);
+                ctx.stroke();
+                if (char.hasTuftTail) {
+                    ctx.fillStyle = '#663311';
+                    ctx.beginPath();
+                    ctx.arc(35, -10, 7, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            ctx.restore();
+
+            ctx.fillStyle = char.bodyColor;
+            ctx.beginPath();
+            ctx.ellipse(-18 + walkCycle * 2, 22, 9, 6, 0, 0, Math.PI * 2);
+            ctx.ellipse(18 - walkCycle * 2, 22, 9, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = char.bellyColor || '#ffffff';
+            ctx.beginPath();
+            ctx.ellipse(-18 + walkCycle * 2, 23, 6, 3, 0, 0, Math.PI * 2);
+            ctx.ellipse(18 - walkCycle * 2, 23, 6, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = char.bodyColor;
+            ctx.beginPath();
+            ctx.ellipse(0, 10, 20, 18, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = char.bellyColor || '#ffffff';
+            ctx.beginPath();
+            ctx.ellipse(0, 12, 13, 13, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (char.isGator) {
+                ctx.strokeStyle = '#88dd44';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(-8, 8); ctx.lineTo(8, 8);
+                ctx.stroke();
+            } else if (char.hasStripes) {
+                ctx.fillStyle = '#331100';
+                ctx.fillRect(-18, 8, 4, 2);
+                ctx.fillRect(14, 8, 4, 2);
+            }
+
+            ctx.fillStyle = char.bodyColor;
+            ctx.beginPath();
+            ctx.ellipse(0, -12, 28, 24, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (char.hasAntlers) {
+                ctx.strokeStyle = '#663311';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(-12, -30); ctx.lineTo(-18, -42); ctx.lineTo(-24, -38);
+                ctx.moveTo(12, -30); ctx.lineTo(18, -42); ctx.lineTo(24, -38);
+                ctx.stroke();
+            }
+
+            if (char.ears === 'pointed' || char.ears === 'pointed_wolf' || char.ears === 'tufted') {
+                ctx.fillStyle = char.bodyColor;
+                ctx.beginPath();
+                ctx.moveTo(-24, -18); ctx.lineTo(-18, -38); ctx.lineTo(-6, -26); ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(24, -18); ctx.lineTo(18, -38); ctx.lineTo(6, -26); ctx.fill();
+                ctx.fillStyle = '#ffb3cc';
+                ctx.beginPath();
+                ctx.moveTo(-20, -20); ctx.lineTo(-17, -33); ctx.lineTo(-9, -25); ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(20, -20); ctx.lineTo(17, -33); ctx.lineTo(9, -25); ctx.fill();
+            } else if (char.ears === 'floppy_elephant') {
+                ctx.fillStyle = '#77aaee';
+                ctx.beginPath();
+                ctx.ellipse(-32, -12, 14, 20, -0.3, 0, Math.PI * 2);
+                ctx.ellipse(32, -12, 14, 20, 0.3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffb3cc';
+                ctx.beginPath();
+                ctx.ellipse(-31, -12, 9, 14, -0.3, 0, Math.PI * 2);
+                ctx.ellipse(31, -12, 9, 14, 0.3, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (char.ears !== 'none') {
+                ctx.fillStyle = char.bodyColor;
+                ctx.beginPath();
+                ctx.arc(-20, -28, 10, 0, Math.PI * 2);
+                ctx.arc(20, -28, 10, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffb3cc';
+                ctx.beginPath();
+                ctx.arc(-20, -28, 6, 0, Math.PI * 2);
+                ctx.arc(20, -28, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            if (char.hasMask || char.hasEyeMask || char.hasWolfMask) {
+                ctx.fillStyle = '#222228';
+                ctx.beginPath();
+                ctx.ellipse(-12, -12, 10, 8, 0.2, 0, Math.PI * 2);
+                ctx.ellipse(12, -12, 10, 8, -0.2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            const eyeX = 12, eyeY = -14, eyeR = 9.5;
+            [-eyeX, eyeX].forEach(ex => {
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(ex, eyeY, eyeR, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = char.eyeColor;
+                ctx.beginPath();
+                ctx.arc(ex, eyeY, eyeR - 0.8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#0a0a12';
+                ctx.beginPath();
+                ctx.arc(ex, eyeY + 0.5, eyeR - 3.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(ex - 3, eyeY - 3, 3.2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            if (char.hasTrunk) {
+                ctx.fillStyle = char.bodyColor;
+                ctx.beginPath();
+                ctx.moveTo(-5, -6);
+                ctx.quadraticCurveTo(0, 15, 12, 10);
+                ctx.quadraticCurveTo(0, 5, -2, -6);
+                ctx.fill();
+            } else {
+                ctx.fillStyle = char.bellyColor || '#ffffff';
+                ctx.beginPath();
+                ctx.ellipse(0, -6, 8, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = char.isGator ? '#225522' : '#221115';
+                ctx.beginPath();
+                ctx.ellipse(0, -8, 3.5, 2.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.restore();
+        }
+
+        function renderCharacterGrid() {
+            const container = document.getElementById('character-select');
+            container.innerHTML = '';
+            CHARACTERS.forEach(char => {
+                const card = document.createElement('div');
+                const isSelected = selectedChar.id === char.id;
+                card.className = `flex flex-col items-center p-2 rounded-2xl border-2 transition-all cursor-pointer ${
+                    isSelected ? 'bg-gradient-to-b from-pink-500/40 to-purple-600/40 border-yellow-300 scale-105 shadow-xl' : 'bg-white/5 border-white/10 hover:bg-white/20'
+                }`;
+
+                const canv = document.createElement('canvas');
+                canv.width = 70; canv.height = 70;
+                const cctx = canv.getContext('2d');
+                cctx.translate(35, 38);
+                drawFullBodyCharacter(cctx, char, 0.85, 0, 1);
+                card.appendChild(canv);
+
+                const nameTag = document.createElement('span');
+                nameTag.className = 'text-xs font-bold text-white mt-1';
+                nameTag.innerText = char.name;
+                card.appendChild(nameTag);
+
+                card.onclick = () => {
+                    selectedChar = char;
+                    renderCharacterGrid();
+                    updateHudAvatar();
+                };
+                container.appendChild(card);
+            });
+        }
+
+        function updateHudAvatar() {
+            document.getElementById('hud-name').innerText = selectedChar.name;
+            document.getElementById('hud-type').innerText = selectedChar.type;
+            const hudCanv = document.getElementById('hudAvatarCanvas');
+            const hctx = hudCanv.getContext('2d');
+            hctx.clearRect(0, 0, 48, 48);
+            hctx.save();
+            hctx.translate(24, 26);
+            drawFullBodyCharacter(hctx, selectedChar, 0.58, 0, 1);
+            hctx.restore();
+        }
+
+        renderCharacterGrid();
+        updateHudAvatar();
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let gameState = 'MENU';
+        let score = 0;
+        let highScore = localStorage.getItem('cloud_jumper_max_score') || 0;
+        let currentTrailColor = '#ff3366';
+        let animFrameCounter = 0;
+
+        function changeTrailColor(color) {
+            currentTrailColor = color;
+            sound.playCollect();
+        }
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let player = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            vx: 0,
+            vy: 0,
+            radius: 26,
+            squish: 1,
+            powerTimer: 0,
+            slowMoTimer: 0,
+            mirrorTimer: 0,
+            magnetActive: false,
+            canDoubleJump: true,
+            hasDoubleJumped: false,
+            hasShield: false
+        };
+
+        let clouds = [];
+        let items = [];
+        let particles = [];
+        let trailPoints = [];
+        let cameraY = 0;
+        let targetCameraY = 0;
+
+        const keys = { left: false, right: false };
+        let touchX = null;
+
+        window.addEventListener('keydown', e => {
+            if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
+            if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
+            if (e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') {
+                triggerJump();
+            }
+        });
+        window.addEventListener('keyup', e => {
+            if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
+            if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
+        });
+
+        canvas.addEventListener('pointerdown', e => {
+            const rect = canvas.getBoundingClientRect();
+            touchX = e.clientX - rect.left;
+            triggerJump();
+        });
+        canvas.addEventListener('pointermove', e => {
+            if (touchX !== null) {
+                const rect = canvas.getBoundingClientRect();
+                touchX = e.clientX - rect.left;
+            }
+        });
+        canvas.addEventListener('pointerup', () => touchX = null);
+
+        function triggerJump() {
+            if (gameState !== 'PLAYING') return;
+            if (player.canDoubleJump && !player.hasDoubleJumped && player.vy > 1) {
+                player.vy = -14.5;
+                player.hasDoubleJumped = true;
+                player.squish = 1.35;
+                sound.playDoubleJump();
+                createSparkles(player.x, player.y, '#33ffff', 10);
+            }
+        }
+
+        function initGame() {
+            score = 0;
+            document.getElementById('score-display').innerText = '0 m';
+            player.x = canvas.width / 2;
+            player.y = canvas.height - 180;
+            player.vx = 0;
+            player.vy = -14;
+            player.squish = 1;
+            player.powerTimer = 0;
+            player.slowMoTimer = 0;
+            player.mirrorTimer = 0;
+            player.magnetActive = false;
+            player.canDoubleJump = true;
+            player.hasDoubleJumped = false;
+            player.hasShield = false;
+
+            cameraY = 0;
+            targetCameraY = 0;
+
+            clouds = [];
+            items = [];
+            particles = [];
+            trailPoints = [];
+
+            clouds.push({
+                x: canvas.width / 2 - 70,
+                y: canvas.height - 120,
+                baseY: canvas.height - 120,
+                width: 140,
+                height: 30,
+                type: 'normal',
+                vx: 0,
+                color: '#ffffff',
+                alpha: 1.0,
+                timer: 0
+            });
+
+            let genY = canvas.height - 220;
+            while (genY > -3000) {
+                spawnCloud(genY);
+                genY -= Math.floor(Math.random() * 55) + 60;
+            }
+        }
+
+        function spawnCloud(y) {
+            const width = Math.floor(Math.random() * 40) + 80;
+            const x = Math.random() * (canvas.width - width - 40) + 20;
+            const rand = Math.random();
+            let type = 'normal';
+            let color = '#ffffff';
+
+            if (rand < 0.10) { type = 'bouncy'; color = '#ff99ff'; }
+            else if (rand < 0.22) { type = 'moving'; color = '#99ffff'; } // Increased moving clouds
+            else if (rand < 0.34) { type = 'oscillating'; color = '#2dd4bf'; } // Increased oscillating clouds
+            else if (rand < 0.40) { type = 'hazard'; color = '#64748b'; }
+            else if (rand < 0.46) { type = 'fragile'; color = '#fcd34d'; }
+            else if (rand < 0.52) { type = 'portal'; color = '#c084fc'; }
+            else if (rand < 0.58) { type = 'rainbow'; color = '#ec4899'; }
+            else if (rand < 0.64) { type = 'ghost'; color = '#cbd5e1'; }
+            else if (rand < 0.70) { type = 'teleporter'; color = '#38bdf8'; }
+            else if (rand < 0.75) { type = 'starcluster'; color = '#facc15'; }
+            else if (rand < 0.80) { type = 'mirror'; color = '#94a3b8'; }
+            else if (rand < 0.84) { type = 'magnetpicker'; color = '#e11d48'; }
+            else if (rand < 0.88) { type = 'rocketcloud'; color = '#ef4444'; }
+            else if (rand < 0.91) { type = 'chronocloud'; color = '#a855f7'; }
+            else if (rand < 0.94) { type = 'bombcloud'; color = '#334155'; }
+            else if (rand < 0.96) { type = 'fortresscloud'; color = '#0ea5e9'; }
+            else if (rand < 0.98) { type = 'prismacloud'; color = '#f472b6'; }
+            else if (rand < 0.99) { type = 'vortexcloud'; color = '#4f46e5'; }
+            else if (rand < 0.995) { type = 'frostcloud'; color = '#7dd3fc'; }
+            else { type = 'zenithcloud'; color = '#fbbf24'; }
+
+            clouds.push({
+                x, y, baseY: y, width, height: 28, type, color,
+                vx: type === 'moving' ? (Math.random() > 0.5 ? 3.0 : -3.0) : 0,
+                broken: false,
+                alpha: 1.0,
+                timer: Math.random() * 100
+            });
+
+            if (Math.random() < 0.6 && type !== 'hazard' && type !== 'bombcloud') {
+                const itemRand = Math.random();
+                let itemType = 'star';
+                if (itemRand < 0.12) itemType = 'shield';
+                else if (itemRand < 0.22) itemType = 'rocket';
+                else if (itemRand < 0.32) itemType = 'magnet';
+                else if (itemRand < 0.42) itemType = 'slowmo';
+
+                items.push({
+                    x: x + width / 2,
+                    y: y - 36,
+                    type: itemType,
+                    collected: false,
+                    angle: 0
+                });
+            }
+        }
+
+        function createSparkles(x, y, color, count = 8) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 7,
+                    vy: (Math.random() - 0.5) * 7,
+                    radius: Math.random() * 4 + 3,
+                    color,
+                    alpha: 1,
+                    decay: Math.random() * 0.03 + 0.02
+                });
+            }
+        }
+
+        function startGame() {
+            sound.init();
+            sound.startMusic();
+            document.getElementById('menu-overlay').classList.add('hidden');
+            document.getElementById('gameover-overlay').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+
+            document.getElementById('controls-hint').style.opacity = '1';
+            setTimeout(() => {
+                document.getElementById('controls-hint').style.opacity = '0';
+            }, 4500);
+
+            initGame();
+            gameState = 'PLAYING';
+        }
+
+        function returnToMenu() {
+            gameState = 'MENU';
+            document.getElementById('menu-overlay').classList.remove('hidden');
+            document.getElementById('gameover-overlay').classList.add('hidden');
+            document.getElementById('hud').classList.add('hidden');
+        }
+
+        function gameOver() {
+            gameState = 'GAMEOVER';
+            sound.playFall();
+            document.getElementById('final-score').innerText = `${score} m`;
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('cloud_jumper_max_score', highScore);
+            }
+            document.getElementById('high-score-text').innerText = `Best Record: ${highScore} m`;
+            document.getElementById('gameover-overlay').classList.remove('hidden');
+        }
+
+        function update() {
+            if (gameState !== 'PLAYING') return;
+
+            animFrameCounter++;
+
+            let moveDir = 0;
+            if (keys.left) moveDir = -1;
+            if (keys.right) moveDir = 1;
+            if (touchX !== null) {
+                const diff = touchX - player.x;
+                if (Math.abs(diff) > 8) moveDir = diff > 0 ? 1 : -1;
+            }
+
+            if (player.mirrorTimer > 0) {
+                player.mirrorTimer--;
+                moveDir *= -1;
+            }
+
+            player.vx = moveDir * 7.5;
+            player.x += player.vx;
+
+            if (player.x < -player.radius) player.x = canvas.width + player.radius;
+            if (player.x > canvas.width + player.radius) player.x = -player.radius;
+
+            const gravity = player.slowMoTimer > 0 ? 0.22 : 0.44;
+            player.vy += gravity;
+            player.y += player.vy;
+            player.squish += (1 - player.squish) * 0.12;
+
+            if (player.powerTimer > 0) {
+                player.powerTimer--;
+                player.vy = -14; 
+            }
+            if (player.slowMoTimer > 0) player.slowMoTimer--;
+
+            if (player.vy < 0) {
+                player.hasDoubleJumped = false;
+            }
+
+            targetCameraY = player.y - canvas.height * 0.52;
+            cameraY += (targetCameraY - cameraY) * 0.1;
+
+            if (player.vy > 0) {
+                clouds.forEach(cloud => {
+                    if (cloud.type === 'ghost' && cloud.alpha < 0.3) return;
+
+                    if (!cloud.broken &&
+                        player.x + player.radius * 0.5 > cloud.x &&
+                        player.x - player.radius * 0.5 < cloud.x + cloud.width &&
+                        player.y + player.radius >= cloud.y &&
+                        player.y + player.radius <= cloud.y + cloud.height + 14
+                    ) {
+                        if (cloud.type === 'hazard') {
+                            player.vy = 5;
+                            sound.playHazard();
+                            if (player.hasShield) player.hasShield = false;
+                            createSparkles(player.x, player.y, '#ff3333', 10);
+                        } else if (cloud.type === 'bouncy') {
+                            player.vy = -17;
+                            sound.playSuperJump();
+                            createSparkles(player.x, player.y, '#ff88ff', 12);
+                        } else if (cloud.type === 'portal') {
+                            // Teleport to nearest portal cloud upward
+                            const upwardPortals = clouds.filter(c => c.type === 'portal' && c.y < player.y && !c.broken);
+                            if (upwardPortals.length > 0) {
+                                upwardPortals.sort((a, b) => b.y - a.y); // Closest one above
+                                player.x = upwardPortals[0].x + upwardPortals[0].width / 2;
+                                player.y = upwardPortals[0].y - 20;
+                            }
+                            player.vy = -24;
+                            sound.playPortal();
+                            createSparkles(player.x, player.y, '#c084fc', 20);
+                        } else if (cloud.type === 'rainbow') {
+                            player.vy = -15;
+                            score += 50;
+                            sound.playCollect();
+                            createSparkles(player.x, player.y, '#ec4899', 18);
+                        } else if (cloud.type === 'teleporter') {
+                            // Teleport to random cloud on screen
+                            const screenClouds = clouds.filter(c => !c.broken && c.y > cameraY && c.y < cameraY + canvas.height);
+                            if (screenClouds.length > 0) {
+                                const targetCloud = screenClouds[Math.floor(Math.random() * screenClouds.length)];
+                                player.x = targetCloud.x + targetCloud.width / 2;
+                                player.y = targetCloud.y - 20;
+                            }
+                            player.vy = -13;
+                            sound.playPortal();
+                            createSparkles(player.x, player.y, '#38bdf8', 15);
+                        } else if (cloud.type === 'starcluster') {
+                            player.vy = -15;
+                            score += 100;
+                            sound.playCollect();
+                            createSparkles(player.x, player.y, '#facc15', 25);
+                        } else if (cloud.type === 'mirror') {
+                            player.vy = -13;
+                            player.mirrorTimer = 220;
+                            sound.playPowerup();
+                            createSparkles(player.x, player.y, '#94a3b8', 14);
+                        } else if (cloud.type === 'magnetpicker') {
+                            player.vy = -14;
+                            player.magnetActive = true;
+                            setTimeout(() => player.magnetActive = false, 7000);
+                            sound.playPowerup();
+                            createSparkles(player.x, player.y, '#e11d48', 16);
+                        } else if (cloud.type === 'rocketcloud') {
+                            player.vy = -26;
+                            sound.playPowerup();
+                            createSparkles(player.x, player.y, '#ef4444', 22);
+                        } else if (cloud.type === 'chronocloud') {
+                            player.vy = -13;
+                            player.slowMoTimer = 300;
+                            sound.playPowerup();
+                            createSparkles(player.x, player.y, '#a855f7', 16);
+                        } else if (cloud.type === 'bombcloud') {
+                            cloud.broken = true;
+                            player.vy = -22;
+                            sound.playHazard();
+                            clouds.forEach(c => {
+                                if (Math.hypot(c.x - cloud.x, c.y - cloud.y) < 140) c.broken = true;
+                            });
+                            createSparkles(player.x, player.y, '#334155', 25);
+                        } else if (cloud.type === 'fortresscloud') {
+                            player.vy = -13;
+                            player.hasShield = true;
+                            sound.playPowerup();
+                            createSparkles(player.x, player.y, '#0ea5e9', 18);
+                        } else if (cloud.type === 'prismacloud') {
+                            player.vy = -16;
+                            score += 150;
+                            sound.playCollect();
+                            createSparkles(player.x, player.y, '#f472b6', 22);
+                        } else if (cloud.type === 'vortexcloud') {
+                            player.vy = -20;
+                            player.vx += (Math.random() > 0.5 ? 8 : -8);
+                            sound.playPortal();
+                            createSparkles(player.x, player.y, '#4f46e5', 20);
+                        } else if (cloud.type === 'frostcloud') {
+                            player.vy = -14;
+                            player.slowMoTimer = 220;
+                            sound.playJump();
+                            createSparkles(player.x, player.y, '#7dd3fc', 15);
+                        } else if (cloud.type === 'zenithcloud') {
+                            player.vy = -18;
+                            score += 200;
+                            sound.playCollect();
+                            items.push({ x: cloud.x + cloud.width / 2, y: cloud.y - 60, type: 'star', collected: false, angle: 0 });
+                            createSparkles(player.x, player.y, '#fbbf24', 30);
+                        } else if (cloud.type === 'oscillating') {
+                            player.vy = -15;
+                            sound.playSuperJump();
+                            createSparkles(player.x, player.y, '#2dd4bf', 15);
+                        } else if (cloud.type === 'fragile') {
+                            cloud.broken = true;
+                            player.vy = -13;
+                            sound.playJump();
+                            createSparkles(cloud.x + cloud.width/2, cloud.y, '#fcd34d', 14);
+                        } else {
+                            player.vy = -12.8;
+                            sound.playJump();
+                            createSparkles(player.x, player.y, '#ffffff', 6);
+                        }
+                        player.squish = 1.45;
+
+                        const currentHeight = Math.floor(Math.abs(player.y - canvas.height) / 10);
+                        if (currentHeight > score) {
+                            score = currentHeight;
+                            document.getElementById('score-display').innerText = `${score} m`;
+                        }
+                    }
+                });
+            }
+
+            clouds.forEach(cloud => {
+                if (cloud.type === 'moving') {
+                    cloud.x += cloud.vx;
+                    if (cloud.x < 10 || cloud.x + cloud.width > canvas.width - 10) {
+                        cloud.vx *= -1;
+                    }
+                } else if (cloud.type === 'oscillating') {
+                    cloud.timer += 0.05;
+                    cloud.y = cloud.baseY + Math.sin(cloud.timer) * 35;
+                } else if (cloud.type === 'ghost') {
+                    cloud.timer += 0.04;
+                    cloud.alpha = (Math.sin(cloud.timer) + 1) * 0.5;
+                }
+            });
+
+            items.forEach(item => {
+                if (!item.collected) {
+                    item.angle += 0.05;
+                    if (player.magnetActive) {
+                        const mDist = Math.hypot(player.x - item.x, player.y - item.y);
+                        if (mDist < 200) {
+                            item.x += (player.x - item.x) * 0.1;
+                            item.y += (player.y - item.y) * 0.1;
+                        }
+                    }
+
+                    const dist = Math.hypot(player.x - item.x, player.y - item.y);
+                    if (dist < player.radius + 18) {
+                        item.collected = true;
+                        if (item.type === 'star') {
+                            score += 25;
+                            sound.playCollect();
+                            createSparkles(item.x, item.y, '#ffea00');
+                        } else if (item.type === 'shield') {
+                            player.hasShield = true;
+                            sound.playPowerup();
+                            createSparkles(item.x, item.y, '#33ffff', 12);
+                        } else if (item.type === 'rocket') {
+                            player.powerTimer = 70;
+                            sound.playPowerup();
+                            createSparkles(item.x, item.y, '#ff33aa', 16);
+                        } else if (item.type === 'magnet') {
+                            player.magnetActive = true;
+                            setTimeout(() => player.magnetActive = false, 8000);
+                            sound.playPowerup();
+                            createSparkles(item.x, item.y, '#f43f5e', 14);
+                        } else if (item.type === 'slowmo') {
+                            player.slowMoTimer = 350;
+                            sound.playPowerup();
+                            createSparkles(item.x, item.y, '#38bdf8', 14);
+                        }
+                        document.getElementById('score-display').innerText = `${score} m`;
+                    }
+                }
+            });
+
+            let activeColor = currentTrailColor;
+            if (currentTrailColor === 'rainbow') {
+                const hue = (animFrameCounter * 4) % 360;
+                activeColor = `hsl(${hue}, 100%, 60%)`;
+            }
+
+            trailPoints.push({
+                x: player.x,
+                y: player.y + 12,
+                color: activeColor,
+                alpha: 0.85,
+                radius: 14
+            });
+            if (trailPoints.length > 90) trailPoints.shift();
+
+            trailPoints.forEach(pt => pt.alpha -= 0.007);
+            trailPoints = trailPoints.filter(pt => pt.alpha > 0);
+
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= p.decay;
+            });
+            particles = particles.filter(p => p.alpha > 0);
+
+            const highestCloudY = Math.min(...clouds.map(c => c.y));
+            if (highestCloudY > cameraY - canvas.height) {
+                spawnCloud(highestCloudY - (Math.random() * 55 + 60));
+            }
+
+            clouds = clouds.filter(c => c.y < cameraY + canvas.height + 160 && !c.broken);
+            items = items.filter(i => i.y < cameraY + canvas.height + 160 && !i.collected);
+
+            if (player.y > cameraY + canvas.height + 80) {
+                if (player.hasShield) {
+                    player.hasShield = false;
+                    player.vy = -16;
+                } else {
+                    gameOver();
+                }
+            }
+        }
+
+        function drawDynamicSky() {
+            const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            if (score < 150) {
+                grad.addColorStop(0, '#2d1b4e');
+                grad.addColorStop(0.5, '#7b2cbf');
+                grad.addColorStop(1, '#ff758c');
+            } else if (score < 400) {
+                grad.addColorStop(0, '#0a0a23');
+                grad.addColorStop(0.6, '#181145');
+                grad.addColorStop(1, '#3a1c71');
+            } else {
+                grad.addColorStop(0, '#0f0c29');
+                grad.addColorStop(0.5, '#302b63');
+                grad.addColorStop(1, '#24243e');
+            }
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 45; i++) {
+                let sx = (i * 83) % canvas.width;
+                let sy = ((i * 149) - cameraY * 0.18) % canvas.height;
+                if (sy < 0) sy += canvas.height;
+                let size = (i % 3) + 1;
+                ctx.globalAlpha = 0.4 + Math.sin(animFrameCounter * 0.04 + i) * 0.4;
+                ctx.beginPath();
+                ctx.arc(sx, sy, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1.0;
+        }
+
+        function drawSkyPaintTrails() {
+            for (let i = 1; i < trailPoints.length; i++) {
+                const p1 = trailPoints[i - 1];
+                const p2 = trailPoints[i];
+                ctx.strokeStyle = p2.color;
+                ctx.lineWidth = p2.radius * 2;
+                ctx.globalAlpha = p2.alpha;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y - cameraY);
+                ctx.lineTo(p2.x, p2.y - cameraY);
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1.0;
+        }
+
+        function drawClouds() {
+            clouds.forEach(cloud => {
+                if (cloud.broken) return;
+                const renderY = cloud.y - cameraY;
+                if (renderY > -100 && renderY < canvas.height + 100) {
+                    ctx.save();
+                    ctx.globalAlpha = cloud.type === 'ghost' ? Math.max(0.2, cloud.alpha) : 1.0;
+                    ctx.fillStyle = cloud.color;
+                    ctx.shadowColor = cloud.type === 'portal' ? '#c084fc' : (cloud.type === 'bouncy' ? '#ff66ff' : (cloud.type === 'starcluster' ? '#facc15' : '#ffffff'));
+                    ctx.shadowBlur = 18;
+
+                    const r = cloud.height / 2;
+                    ctx.beginPath();
+                    ctx.roundRect(cloud.x, renderY, cloud.width, cloud.height, r);
+                    ctx.fill();
+
+                    ctx.beginPath();
+                    ctx.arc(cloud.x + cloud.width * 0.3, renderY - 4, r * 0.85, 0, Math.PI * 2);
+                    ctx.arc(cloud.x + cloud.width * 0.68, renderY - 6, r * 0.95, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.font = '11px Fredoka One';
+                    ctx.fillStyle = cloud.type === 'hazard' ? '#fca5a5' : (cloud.type === 'portal' ? '#f3e8ff' : '#333333');
+                    ctx.textAlign = 'center';
+                    if (cloud.type === 'bouncy') ctx.fillText('⚡ BOUNCE', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'moving') ctx.fillText('☁️ ⇄', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'oscillating') ctx.fillText('↕️ BOB', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'hazard') ctx.fillText('🌩️ STORM', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'fragile') ctx.fillText('🍂 CRUMBLE', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'portal') ctx.fillText('🌀 PORTAL', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'rainbow') ctx.fillText('🌈 RAINBOW', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'ghost') ctx.fillText('👻 GHOST', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'teleporter') ctx.fillText('🕳️ TELEPORT', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'starcluster') ctx.fillText('✨ STARBURST', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'mirror') ctx.fillText('🪞 MIRROR', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'magnetpicker') ctx.fillText('🧲 PULL', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'rocketcloud') ctx.fillText('🚀 ROCKET', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'chronocloud') ctx.fillText('⏳ CHRONO', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'bombcloud') ctx.fillText('💣 BOMB', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'fortresscloud') ctx.fillText('🛡️ SHIELD', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'prismacloud') ctx.fillText('💎 PRISMA', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'vortexcloud') ctx.fillText('🌀 VORTEX', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'frostcloud') ctx.fillText('❄️ FROST', cloud.x + cloud.width / 2, renderY + r + 4);
+                    else if (cloud.type === 'zenithcloud') ctx.fillText('👑 ZENITH', cloud.x + cloud.width / 2, renderY + r + 4);
+
+                    ctx.restore();
+                }
+            });
+        }
+
+        function drawItems() {
+            items.forEach(item => {
+                if (!item.collected) {
+                    const renderY = item.y - cameraY;
+                    if (renderY > -50 && renderY < canvas.height + 50) {
+                        ctx.save();
+                        ctx.translate(item.x, renderY);
+                        ctx.rotate(Math.sin(item.angle) * 0.2);
+
+                        ctx.shadowColor = '#ffff00';
+                        ctx.shadowBlur = 16;
+                        ctx.font = '24px sans-serif';
+                        ctx.textAlign = 'center';
+                        if (item.type === 'shield') ctx.fillText('🛡️', 0, 8);
+                        else if (item.type === 'rocket') ctx.fillText('🚀', 0, 8);
+                        else if (item.type === 'magnet') ctx.fillText('🧲', 0, 8);
+                        else if (item.type === 'slowmo') ctx.fillText('⏳', 0, 8);
+                        else ctx.fillText('⭐', 0, 8);
+
+                        ctx.restore();
+                    }
+                }
+            });
+        }
+
+        function drawPlayer() {
+            const renderY = player.y - cameraY;
+            ctx.save();
+            ctx.translate(player.x, renderY);
+            drawFullBodyCharacter(ctx, selectedChar, 0.9, animFrameCounter, player.squish);
+            if (player.hasShield) {
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 4;
+                ctx.shadowColor = '#38bdf8';
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.arc(0, 0, 32, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                const renderY = p.y - cameraY;
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.arc(p.x, renderY, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawDynamicSky();
+            drawSkyPaintTrails();
+            drawClouds();
+            drawItems();
+            drawParticles();
+            drawPlayer();
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        window.onload = () => {
+            requestAnimationFrame(gameLoop);
+        };
+    </script>
+</body>
+</html>
