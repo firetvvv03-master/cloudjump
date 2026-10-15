@@ -127,11 +127,11 @@
                 <!-- Customization Container -->
                 <div id="section-custom" class="w-full max-w-3xl my-1 bg-white/10 border border-white/20 rounded-2xl p-2 sm:p-3 backdrop-blur-md shadow-2xl">
                     <div class="flex justify-center flex-wrap gap-1.5 sm:gap-2 mb-2">
-                        <button onclick="switchTab('chars')" id="tab-chars" class="px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-pink-500 text-white transition-all shadow">Characters (22)</button>
-                        <button onclick="switchTab('legs')" id="tab-legs" class="px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-white/20 text-white transition-all shadow">Leg Skins (20)</button>
-                        <button onclick="switchTab('hats')" id="tab-hats" class="px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-white/20 text-white transition-all shadow">Hats (20)</button>
-                        <button onclick="switchTab('glasses')" id="tab-glasses" class="px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-white/20 text-white transition-all shadow">Glasses (20)</button>
-                        <button onclick="switchTab('brushes')" id="tab-brushes" class="px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-white/20 text-white transition-all shadow">Trail FX (20)</button>
+                        <button onclick="switchTab('chars')" id="tab-chars" class="px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-pink-500 text-white transition-all shadow">Characters</button>
+                        <button onclick="switchTab('legs')" id="tab-legs" class="px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-white/20 text-white transition-all shadow">Leg Skins</button>
+                        <button onclick="switchTab('hats')" id="tab-hats" class="px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-white/20 text-white transition-all shadow">Hats</button>
+                        <button onclick="switchTab('glasses')" id="tab-glasses" class="px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-white/20 text-white transition-all shadow">Glasses</button>
+                        <button onclick="switchTab('brushes')" id="tab-brushes" class="px-2.5 sm:px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold bg-white/20 text-white transition-all shadow">Trail FX</button>
                     </div>
 
                     <div id="selection-panel" class="max-h-[22vh] sm:max-h-[26vh] overflow-y-auto p-1"></div>
@@ -172,10 +172,17 @@
                 <h2 id="gameover-title" class="title-font text-2xl sm:text-4xl text-yellow-300 mb-1 drop-shadow">Great Adventure!</h2>
                 <p id="gameover-subtitle" class="text-pink-200 text-xs sm:text-sm mb-4">You soared high into the colorful sky!</p>
                 
-                <div class="bg-white/10 border border-white/20 rounded-2xl p-4 mb-6 w-64 sm:w-72 backdrop-blur-sm shadow-xl">
+                <div class="bg-white/10 border border-white/20 rounded-2xl p-4 mb-4 w-64 sm:w-72 backdrop-blur-sm shadow-xl">
                     <div class="text-xs text-purple-200 uppercase font-bold">Highest Altitude</div>
                     <div id="final-score" class="title-font text-3xl sm:text-4xl text-yellow-300 my-1">0 m</div>
                     <div class="text-xs text-pink-300" id="high-score-text">Best Record: 0 m</div>
+                </div>
+
+                <!-- Continue via Ad View Button -->
+                <div id="continue-ad-wrapper" class="mb-4">
+                    <button id="continue-ad-btn" onclick="continueWithAd()" class="title-font px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:opacity-90 text-white text-xs sm:text-sm rounded-xl shadow-lg border border-yellow-300/60 transform hover:scale-105 transition-all cursor-pointer flex items-center gap-2">
+                        <span>📺 Watch Ad to Continue (<span id="ad-continues-left">2</span> left)</span>
+                    </button>
                 </div>
 
                 <div class="flex gap-3 sm:gap-4">
@@ -297,6 +304,7 @@
 
         let totalHazardsSurvived = 0;
         let sessionItemsCollected = 0;
+        let adContinuesRemaining = 2; // Track allowed ad continues per session[cite: 5]
 
         function renderQuestsAndAchievements() {
             const qList = document.getElementById('daily-quests-list');
@@ -390,7 +398,12 @@
             { id: 'slime', name: 'Gooey', type: 'Elastic Blob', ability: 'Super bouncy squishy spring on every bounce.', bodyColor: '#06b6d4', glowColor: '#22d3ee', bellyColor: '#cffafe', eyeColor: '#0369a1', silhouette: 'slime', ears: 'blob_antennae' },
             { id: 'ghost', name: 'Casper', type: 'Phantasmal Float', ability: 'Passes harmlessly through one hazard per climb.', bodyColor: '#cbd5e1', glowColor: '#f8fafc', bellyColor: '#ffffff', eyeColor: '#475569', silhouette: 'ghost', ears: 'none' },
             { id: 'turtle', name: 'Shelly', type: 'Sturdy Shield', ability: 'Starts every game with an active permanent mini-shield.', bodyColor: '#15803d', glowColor: '#4ade80', bellyColor: '#dcfce7', eyeColor: '#166534', silhouette: 'turtle', ears: 'none' },
-            { id: 'phoenix', name: 'Astra', type: 'Solar Rebirth', ability: 'Revives with 1 HP once upon losing all hearts.', bodyColor: '#ea580c', glowColor: '#fbbf24', bellyColor: '#ffedd5', eyeColor: '#b45309', silhouette: 'phoenix', ears: 'crest_feathers' }
+            { id: 'phoenix', name: 'Astra', type: 'Solar Rebirth', ability: 'Revives with 1 HP once upon losing all hearts.', bodyColor: '#ea580c', glowColor: '#fbbf24', bellyColor: '#ffedd5', eyeColor: '#b45309', silhouette: 'phoenix', ears: 'crest_feathers' },
+            { id: 'v_rainbow_fox', name: 'Spectrum Fox', type: 'Vertical Rainbow', ability: 'Shifts vertical rainbow gradients top-to-bottom.', bodyColor: 'rainbow_vertical', glowColor: '#ec4899', bellyColor: '#ffffff', eyeColor: '#38bdf8', silhouette: 'fox', ears: 'pointed' },
+            { id: 'v_prism_bunny', name: 'Prism Bunny', type: 'Vertical Rainbow', ability: 'Multi-color vertical spectrum bunny hops.', bodyColor: 'rainbow_vertical', glowColor: '#facc15', bellyColor: '#ffffff', eyeColor: '#ef4444', silhouette: 'bunny', ears: 'long_lop' },
+            { id: 'v_neon_dragon', name: 'Prism Dragon', type: 'Vertical Rainbow', ability: 'Vertical spectrum scales with reduced boss damage.', bodyColor: 'rainbow_vertical', glowColor: '#a855f7', bellyColor: '#ffffff', eyeColor: '#22c55e', silhouette: 'dragon', ears: 'dragon_fins' },
+            { id: 'v_spectrum_owl', name: 'Spectrum Owl', type: 'Vertical Rainbow', ability: 'Vertical rainbow plumage for fog piercing.', bodyColor: 'rainbow_vertical', glowColor: '#38bdf8', bellyColor: '#ffffff', eyeColor: '#facc15', silhouette: 'owl', ears: 'feather_horns' },
+            { id: 'v_galaxy_phoenix', name: 'Spectrum Phoenix', type: 'Vertical Rainbow', ability: 'Full vertical spectrum rebirth powers.', bodyColor: 'rainbow_vertical', glowColor: '#ff007f', bellyColor: '#ffffff', eyeColor: '#00ffff', silhouette: 'phoenix', ears: 'crest_feathers' }
         ];
 
         const LEGS = [
@@ -413,7 +426,12 @@
             { id: 'paws_tigers', name: 'Striped Tiger Paws' },
             { id: 'hooves_deer', name: 'Graceful Hooves' },
             { id: 'cloud_walk', name: 'Cloud Slippers' },
-            { id: 'cyber_grips', name: 'Cybernetic Clamps' }
+            { id: 'cyber_grips', name: 'Cybernetic Clamps' },
+            { id: 'v_rainbow_springs', name: 'Rainbow Springs' },
+            { id: 'v_spectrum_rollers', name: 'Spectrum Rollers' },
+            { id: 'v_prism_rockets', name: 'Prism Rockets' },
+            { id: 'v_hue_boots', name: 'Multi-Hue Boots' },
+            { id: 'v_cloud_slippers', name: 'Cloud Spectrum Slipers' }
         ];
 
         const HATS = [
@@ -436,7 +454,12 @@
             { id: 'sombrero', name: 'Fiesta Sombrero' },
             { id: 'beanie', name: 'Cozy Winter Beanie' },
             { id: 'cap_pilot', name: 'Aviator Pilot Cap' },
-            { id: 'flower', name: 'Sunflower Crown' }
+            { id: 'flower', name: 'Sunflower Crown' },
+            { id: 'v_spectrum_wizard', name: 'Spectrum Wizard' },
+            { id: 'v_rainbow_party', name: 'Rainbow Cone' },
+            { id: 'v_prism_helmet', name: 'Prism Helmet' },
+            { id: 'v_rainbow_viking', name: 'Viking Rainbow' },
+            { id: 'v_spectrum_crown', name: 'Spectrum Crown' }
         ];
 
         const GLASSES = [
@@ -459,7 +482,12 @@
             { id: 'butterfly', name: 'Butterfly Glasses' },
             { id: 'clown', name: 'Googly Spring Eyes' },
             { id: 'retro', name: '1970s Disco Specs' },
-            { id: 'diamond', name: 'Diamond Encrusted Frames' }
+            { id: 'diamond', name: 'Diamond Encrusted Frames' },
+            { id: 'v_rainbow_shutter', name: 'Rainbow Shutters' },
+            { id: 'v_prism_goggles', name: 'Prism Goggles' },
+            { id: 'v_spectrum_monocle', name: 'Spectrum Monocle' },
+            { id: 'v_multi_heart', name: 'Multi-Color Hearts' },
+            { id: 'v_spectrum_visor', name: 'Spectrum Visor' }
         ];
 
         const BRUSHES = [
@@ -482,7 +510,12 @@
             { id: 'rainbow', name: '🌈 Rainbow Spark', type: 'color', val: 'rainbow' },
             { id: 'fire', name: '🔥 Fire Flame', type: 'color', val: '#ff4500' },
             { id: 'ice', name: '❄️ Ice Crystal', type: 'emoji', val: '❄️' },
-            { id: 'stardust', name: '🌟 Star Dust', type: 'emoji', val: '⭐' }
+            { id: 'stardust', name: '🌟 Star Dust', type: 'emoji', val: '⭐' },
+            { id: 'v_spectrum_trail', name: '🌈 Spectrum Stream', type: 'color', val: 'rainbow' },
+            { id: 'v_prism_stardust', name: '💎 Prism Shards', type: 'emoji', val: '💎' },
+            { id: 'v_neon_vapor', name: '💙 Neon Vapor', type: 'color', val: '#00ffff' },
+            { id: 'v_aurora_wave', name: '🌌 Aurora Wave', type: 'emoji', val: '🌌' },
+            { id: 'v_cosmic_flares', name: '🌠 Cosmic Flares', type: 'emoji', val: '🌠' }
         ];
 
         const ALL_SHAPES = [
@@ -555,95 +588,170 @@
             renderShopPanel();
         }
 
+        function getRainbowGradient(ctx, x1, y1, x2, y2) {
+            const grad = ctx.createLinearGradient(x1, y1, x2, y2);
+            grad.addColorStop(0.0, '#ef4444'); // Red
+            grad.addColorStop(0.2, '#f97316'); // Orange
+            grad.addColorStop(0.4, '#facc15'); // Yellow
+            grad.addColorStop(0.6, '#22c55e'); // Green
+            grad.addColorStop(0.8, '#3b82f6'); // Blue
+            grad.addColorStop(1.0, '#a855f7'); // Violet
+            return grad;
+        }
+
+        function applyCharacterColorStyle(ctx, char, x1, y1, x2, y2) {
+            if (char.bodyColor === 'rainbow_vertical') {
+                return getRainbowGradient(ctx, x1, y1, x2, y2);
+            }
+            return char.bodyColor;
+        }
+
         function drawLegSkin(ctx, legId) {
             ctx.save();
-            if (legId === 'rollers') {
-                ctx.fillStyle = '#ef4444';
-                ctx.fillRect(-22, 18, 12, 6);
-                ctx.fillRect(10, 18, 12, 6);
-                ctx.fillStyle = '#38bdf8';
-                ctx.beginPath(); ctx.arc(-16, 26, 4, 0, Math.PI * 2); ctx.arc(16, 26, 4, 0, Math.PI * 2); ctx.fill();
-            } else if (legId === 'springs') {
-                ctx.strokeStyle = '#facc15'; ctx.lineWidth = 3;
+            if (legId === 'v_rainbow_springs') {
+                const grad = getRainbowGradient(ctx, -20, 10, -20, 35);
+                ctx.strokeStyle = grad; ctx.lineWidth = 4;
                 ctx.beginPath();
-                ctx.moveTo(-16, 16); ctx.lineTo(-12, 22); ctx.lineTo(-20, 26); ctx.lineTo(-16, 32);
-                ctx.moveTo(16, 16); ctx.lineTo(12, 22); ctx.lineTo(20, 26); ctx.lineTo(16, 32);
+                ctx.moveTo(-18, 14); ctx.lineTo(-12, 21); ctx.lineTo(-22, 27); ctx.lineTo(-18, 34);
+                ctx.moveTo(18, 14); ctx.lineTo(12, 21); ctx.lineTo(22, 27); ctx.lineTo(18, 34);
+                ctx.stroke();
+            } else if (legId === 'v_spectrum_rollers') {
+                ctx.fillStyle = getRainbowGradient(ctx, -26, 16, -10, 24);
+                ctx.fillRect(-26, 16, 16, 8);
+                ctx.fillRect(10, 16, 16, 8);
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath(); ctx.arc(-18, 27, 5, 0, Math.PI * 2); ctx.arc(18, 27, 5, 0, Math.PI * 2); ctx.fill();
+            } else if (legId === 'v_prism_rockets') {
+                ctx.fillStyle = getRainbowGradient(ctx, -24, 14, -11, 28);
+                ctx.fillRect(-24, 14, 13, 14);
+                ctx.fillRect(11, 14, 13, 14);
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath(); ctx.moveTo(-17, 34); ctx.lineTo(-24, 43); ctx.lineTo(-10, 43); ctx.closePath();
+                ctx.moveTo(17, 34); ctx.lineTo(10, 43); ctx.lineTo(24, 43); ctx.closePath();
+                ctx.fill();
+            } else if (legId === 'v_hue_boots') {
+                ctx.fillStyle = getRainbowGradient(ctx, -26, 14, -11, 29);
+                ctx.fillRect(-26, 14, 15, 15); ctx.fillRect(11, 14, 15, 15);
+            } else if (legId === 'v_cloud_slippers') {
+                ctx.fillStyle = getRainbowGradient(ctx, -29, 12, -7, 34);
+                ctx.beginPath(); ctx.arc(-18, 23, 11, 0, Math.PI * 2); ctx.arc(18, 23, 11, 0, Math.PI * 2); ctx.fill();
+            } else if (legId === 'rollers') {
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(-26, 16, 16, 8);
+                ctx.fillRect(10, 16, 16, 8);
+                ctx.fillStyle = '#38bdf8';
+                ctx.beginPath(); ctx.arc(-18, 27, 5, 0, Math.PI * 2); ctx.arc(18, 27, 5, 0, Math.PI * 2); ctx.fill();
+            } else if (legId === 'springs') {
+                ctx.strokeStyle = '#facc15'; ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(-18, 14); ctx.lineTo(-12, 21); ctx.lineTo(-22, 27); ctx.lineTo(-18, 34);
+                ctx.moveTo(18, 14); ctx.lineTo(12, 21); ctx.lineTo(22, 27); ctx.lineTo(18, 34);
                 ctx.stroke();
             } else if (legId === 'rockets') {
                 ctx.fillStyle = '#f97316';
-                ctx.fillRect(-20, 16, 10, 12);
-                ctx.fillRect(10, 16, 10, 12);
+                ctx.fillRect(-24, 14, 13, 14);
+                ctx.fillRect(11, 14, 13, 14);
                 ctx.fillStyle = '#facc15';
-                ctx.beginPath(); ctx.moveTo(-15, 32); ctx.lineTo(-20, 40); ctx.lineTo(-10, 40); ctx.closePath();
-                ctx.moveTo(15, 32); ctx.lineTo(10, 40); ctx.lineTo(20, 40); ctx.closePath();
+                ctx.beginPath(); ctx.moveTo(-17, 34); ctx.lineTo(-24, 43); ctx.lineTo(-10, 43); ctx.closePath();
+                ctx.moveTo(17, 34); ctx.lineTo(10, 43); ctx.lineTo(24, 43); ctx.closePath();
                 ctx.fill();
             } else if (legId === 'paws_pink') {
                 ctx.fillStyle = '#f472b6';
-                ctx.beginPath(); ctx.arc(-16, 23, 6, 0, Math.PI * 2); ctx.arc(16, 23, 6, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(-18, 22, 8, 0, Math.PI * 2); ctx.arc(18, 22, 8, 0, Math.PI * 2); ctx.fill();
             } else if (legId === 'claws_gold') {
                 ctx.fillStyle = '#facc15';
-                ctx.font = '12px sans-serif';
-                ctx.fillText('⚡', -22, 28); ctx.fillText('⚡', 12, 28);
+                ctx.font = '16px sans-serif';
+                ctx.fillText('⚡', -25, 29); ctx.fillText('⚡', 12, 29);
             } else if (legId === 'sneakers_red') {
                 ctx.fillStyle = '#dc2626';
-                ctx.fillRect(-22, 18, 14, 8); ctx.fillRect(8, 18, 14, 8);
+                ctx.fillRect(-26, 16, 18, 10); ctx.fillRect(8, 16, 18, 10);
                 ctx.fillStyle = '#ffffff';
-                ctx.fillRect(-20, 22, 10, 3); ctx.fillRect(10, 22, 10, 3);
+                ctx.fillRect(-23, 21, 12, 4); ctx.fillRect(11, 21, 12, 4);
             } else if (legId === 'boots_winter') {
                 ctx.fillStyle = '#cbd5e1';
-                ctx.fillRect(-22, 16, 12, 14); ctx.fillRect(10, 16, 12, 14);
+                ctx.fillRect(-26, 14, 15, 17); ctx.fillRect(11, 14, 15, 17);
             } else if (legId === 'flippers') {
                 ctx.fillStyle = '#0ea5e9';
-                ctx.beginPath(); ctx.ellipse(-16, 24, 10, 5, 0.2, 0, Math.PI * 2);
-                ctx.ellipse(16, 24, 10, 5, -0.2, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(-18, 24, 13, 6, 0.2, 0, Math.PI * 2);
+                ctx.ellipse(18, 24, 13, 6, -0.2, 0, Math.PI * 2); ctx.fill();
             } else if (legId === 'magical') {
                 ctx.fillStyle = '#c084fc';
-                ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 10;
-                ctx.beginPath(); ctx.arc(-16, 24, 6, 0, Math.PI * 2); ctx.arc(16, 24, 6, 0, Math.PI * 2); ctx.fill();
+                ctx.shadowColor = '#c084fc'; ctx.shadowBlur = 12;
+                ctx.beginPath(); ctx.arc(-18, 23, 8, 0, Math.PI * 2); ctx.arc(18, 23, 8, 0, Math.PI * 2); ctx.fill();
             } else if (legId === 'clogs_wooden') {
                 ctx.fillStyle = '#b45309';
-                ctx.fillRect(-22, 18, 12, 8); ctx.fillRect(10, 18, 12, 8);
+                ctx.fillRect(-26, 16, 16, 10); ctx.fillRect(10, 16, 16, 10);
             } else if (legId === 'socks_striped') {
-                ctx.fillStyle = '#ec4899'; ctx.fillRect(-18, 16, 6, 12);
-                ctx.fillStyle = '#38bdf8'; ctx.fillRect(12, 16, 6, 12);
+                ctx.fillStyle = '#ec4899'; ctx.fillRect(-22, 14, 8, 15);
+                ctx.fillStyle = '#38bdf8'; ctx.fillRect(14, 14, 8, 15);
             } else if (legId === 'pegs_pirate') {
                 ctx.fillStyle = '#78350f';
-                ctx.fillRect(-18, 16, 4, 16); ctx.fillRect(14, 16, 4, 16);
+                ctx.fillRect(-20, 14, 5, 19); ctx.fillRect(15, 14, 5, 19);
             } else if (legId === 'shoes_tap') {
                 ctx.fillStyle = '#0f172a';
-                ctx.fillRect(-20, 18, 12, 6); ctx.fillRect(8, 18, 12, 6);
-                ctx.strokeStyle = '#eab308'; ctx.lineWidth = 2;
-                ctx.beginPath(); ctx.moveTo(-20, 24); ctx.lineTo(-8, 24); ctx.moveTo(8, 24); ctx.lineTo(20, 24); ctx.stroke();
+                ctx.fillRect(-24, 16, 16, 8); ctx.fillRect(8, 16, 16, 8);
+                ctx.strokeStyle = '#eab308'; ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.moveTo(-24, 23); ctx.lineTo(-8, 23); ctx.moveTo(8, 23); ctx.lineTo(24, 23); ctx.stroke();
             } else if (legId === 'slime_trail') {
                 ctx.fillStyle = '#22d3ee';
-                ctx.beginPath(); ctx.ellipse(-16, 26, 12, 4, 0, 0, Math.PI * 2);
-                ctx.ellipse(16, 26, 12, 4, 0, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.ellipse(-18, 26, 15, 5, 0, 0, Math.PI * 2);
+                ctx.ellipse(18, 26, 15, 5, 0, 0, Math.PI * 2); ctx.fill();
             } else if (legId === 'boots_combat') {
                 ctx.fillStyle = '#475569';
-                ctx.fillRect(-22, 16, 12, 12); ctx.fillRect(10, 16, 12, 12);
+                ctx.fillRect(-26, 14, 15, 15); ctx.fillRect(11, 14, 15, 15);
                 ctx.fillStyle = '#eab308';
-                ctx.fillRect(-20, 20, 8, 3); ctx.fillRect(12, 20, 8, 3);
+                ctx.fillRect(-23, 19, 10, 4); ctx.fillRect(13, 19, 10, 4);
             } else if (legId === 'paws_tigers') {
                 ctx.fillStyle = '#fbbf24';
-                ctx.fillRect(-20, 18, 10, 8); ctx.fillRect(10, 18, 10, 8);
+                ctx.fillRect(-24, 16, 14, 10); ctx.fillRect(10, 16, 14, 10);
                 ctx.fillStyle = '#000000';
-                ctx.fillRect(-17, 20, 4, 2); ctx.fillRect(13, 20, 4, 2);
+                ctx.fillRect(-20, 19, 6, 3); ctx.fillRect(14, 19, 6, 3);
             } else if (legId === 'hooves_deer') {
                 ctx.fillStyle = '#292524';
-                ctx.fillRect(-18, 20, 6, 8); ctx.fillRect(12, 20, 6, 8);
+                ctx.fillRect(-22, 18, 8, 10); ctx.fillRect(14, 18, 8, 10);
             } else if (legId === 'cloud_walk') {
                 ctx.fillStyle = '#ffffff';
-                ctx.beginPath(); ctx.arc(-16, 24, 9, 0, Math.PI * 2); ctx.arc(16, 24, 9, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(-18, 23, 11, 0, Math.PI * 2); ctx.arc(18, 23, 11, 0, Math.PI * 2); ctx.fill();
             } else if (legId === 'cyber_grips') {
-                ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 3;
-                ctx.strokeRect(-20, 18, 10, 10); ctx.strokeRect(10, 18, 10, 10);
+                ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 4;
+                ctx.strokeRect(-24, 16, 13, 13); ctx.strokeRect(11, 16, 13, 13);
             }
             ctx.restore();
         }
 
         function drawAccessories(ctx, hatId, glassesId) {
             ctx.save();
-            if (hatId === 'party') {
+            if (hatId === 'v_spectrum_wizard') {
+                ctx.fillStyle = getRainbowGradient(ctx, -18, -52, 18, -22);
+                ctx.beginPath();
+                ctx.moveTo(0, -52); ctx.lineTo(-18, -22); ctx.lineTo(18, -22); ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = '#facc15';
+                ctx.font = '10px sans-serif'; ctx.fillText('✨', -6, -30);
+            } else if (hatId === 'v_rainbow_party') {
+                ctx.fillStyle = getRainbowGradient(ctx, -14, -38, 14, -18);
+                ctx.beginPath();
+                ctx.moveTo(0, -38); ctx.lineTo(-14, -18); ctx.lineTo(14, -18); ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath(); ctx.arc(0, -40, 4, 0, Math.PI * 2); ctx.fill();
+            } else if (hatId === 'v_prism_helmet') {
+                ctx.strokeStyle = getRainbowGradient(ctx, -22, -38, 22, 6); ctx.lineWidth = 4;
+                ctx.fillStyle = 'rgba(56, 189, 248, 0.4)';
+                ctx.beginPath(); ctx.arc(0, -16, 22, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            } else if (hatId === 'v_rainbow_viking') {
+                ctx.fillStyle = getRainbowGradient(ctx, -14, -48, 14, -28);
+                ctx.beginPath(); ctx.arc(0, -28, 14, Math.PI, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath(); ctx.moveTo(-12, -32); ctx.lineTo(-24, -48); ctx.lineTo(-8, -34);
+                ctx.moveTo(12, -32); ctx.lineTo(24, -48); ctx.lineTo(8, -34); ctx.fill();
+            } else if (hatId === 'v_spectrum_crown') {
+                ctx.fillStyle = getRainbowGradient(ctx, -18, -38, 18, -20);
+                ctx.beginPath();
+                ctx.moveTo(-15, -20); ctx.lineTo(-18, -35); ctx.lineTo(-8, -25); ctx.lineTo(0, -38); ctx.lineTo(8, -25); ctx.lineTo(18, -35); ctx.lineTo(15, -20);
+                ctx.closePath();
+                ctx.fill();
+            } else if (hatId === 'party') {
                 ctx.fillStyle = '#ec4899';
                 ctx.beginPath();
                 ctx.moveTo(0, -38); ctx.lineTo(-14, -18); ctx.lineTo(14, -18); ctx.closePath();
@@ -736,7 +844,27 @@
                 ctx.beginPath(); ctx.arc(0, -32, 4, 0, Math.PI * 2); ctx.fill();
             }
 
-            if (glassesId === 'sunglasses') {
+            if (glassesId === 'v_rainbow_shutter') {
+                ctx.fillStyle = '#ef4444'; ctx.fillRect(-18, -18, 8, 8);
+                ctx.fillStyle = '#f97316'; ctx.fillRect(-10, -18, 8, 8);
+                ctx.fillStyle = '#22c55e'; ctx.fillRect(2, -18, 8, 8);
+                ctx.fillStyle = '#3b82f6'; ctx.fillRect(10, -18, 8, 8);
+            } else if (glassesId === 'v_prism_goggles') {
+                ctx.strokeStyle = getRainbowGradient(ctx, -18, -18, 18, -4); ctx.lineWidth = 3;
+                ctx.strokeRect(-18, -18, 14, 14); ctx.strokeRect(4, -18, 14, 14);
+            } else if (glassesId === 'v_spectrum_monocle') {
+                ctx.strokeStyle = getRainbowGradient(ctx, 1, -21, 17, -5); ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.arc(9, -13, 8, 0, Math.PI * 2); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(17, -13); ctx.lineTo(22, 0); ctx.stroke();
+            } else if (glassesId === 'v_multi_heart') {
+                ctx.fillStyle = '#a855f7';
+                ctx.font = '14px sans-serif';
+                ctx.fillText('💖', -17, -9); ctx.fillText('💙', 5, -9);
+            } else if (glassesId === 'v_spectrum_visor') {
+                ctx.fillStyle = getRainbowGradient(ctx, -22, -18, 22, -10);
+                ctx.shadowColor = '#a855f7'; ctx.shadowBlur = 10;
+                ctx.fillRect(-22, -18, 44, 8);
+            } else if (glassesId === 'sunglasses') {
                 ctx.fillStyle = '#0f172a';
                 ctx.fillRect(-18, -18, 14, 10);
                 ctx.fillRect(4, -18, 14, 10);
@@ -829,6 +957,7 @@
             const walkCycle = Math.sin(animFrame * 0.2);
             const tailWag = Math.sin(animFrame * 0.15) * 0.25;
             const sil = char.silhouette;
+            const mainColor = applyCharacterColorStyle(ctx, char, -20, -35, 20, 25);
 
             ctx.save();
             ctx.rotate(tailWag);
@@ -836,31 +965,31 @@
                 ctx.fillStyle = '#334155';
                 ctx.beginPath(); ctx.ellipse(14, 12, 8, 5, 0.4, 0, Math.PI * 2); ctx.fill();
             } else if (sil === 'bunny') {
-                ctx.fillStyle = char.bodyColor;
+                ctx.fillStyle = mainColor;
                 ctx.beginPath(); ctx.arc(16, 14, 6, 0, Math.PI * 2); ctx.fill();
             } else if (sil === 'owl') {
-                ctx.fillStyle = char.bodyColor;
+                ctx.fillStyle = mainColor;
                 ctx.beginPath(); ctx.ellipse(14, 8, 7, 10, 0, 0, Math.PI * 2); ctx.fill();
             } else if (sil === 'panda') {
-                ctx.fillStyle = char.bodyColor;
+                ctx.fillStyle = mainColor;
                 ctx.beginPath(); ctx.arc(15, 12, 8, 0, Math.PI * 2); ctx.fill();
             } else if (sil === 'kitty') {
-                ctx.strokeStyle = char.bodyColor; ctx.lineWidth = 6; ctx.lineCap = 'round';
+                ctx.strokeStyle = mainColor; ctx.lineWidth = 6; ctx.lineCap = 'round';
                 ctx.beginPath(); ctx.moveTo(10, 10); ctx.quadraticCurveTo(26, 22, 20, -12); ctx.stroke();
             } else if (sil === 'dragon') {
-                ctx.fillStyle = char.bodyColor;
+                ctx.fillStyle = mainColor;
                 ctx.beginPath(); ctx.moveTo(10, 10); ctx.lineTo(36, 22); ctx.lineTo(18, -6); ctx.closePath(); ctx.fill();
             } else if (sil === 'ghost') {
-                ctx.fillStyle = char.bodyColor;
+                ctx.fillStyle = mainColor;
                 ctx.beginPath(); ctx.moveTo(10, 15); ctx.quadraticCurveTo(32, 28, 18, -12); ctx.fill();
             } else if (sil === 'turtle') {
                 ctx.fillStyle = '#166534';
                 ctx.beginPath(); ctx.arc(22, 16, 9, 0, Math.PI * 2); ctx.fill();
             } else if (sil === 'phoenix') {
-                ctx.fillStyle = char.bodyColor;
+                ctx.fillStyle = mainColor;
                 ctx.beginPath(); ctx.moveTo(10, 10); ctx.lineTo(40, 24); ctx.lineTo(24, -14); ctx.closePath(); ctx.fill();
             } else if (sil === 'fox' || sil === 'wolf') {
-                ctx.fillStyle = char.bodyColor;
+                ctx.fillStyle = mainColor;
                 ctx.beginPath();
                 ctx.moveTo(10, 10);
                 ctx.quadraticCurveTo(35, 10, 40, -15);
@@ -874,7 +1003,7 @@
                 ctx.quadraticCurveTo(20, -15, 28, -22);
                 ctx.fill();
             } else if (sil === 'raccoon' || sil === 'lemur') {
-                ctx.strokeStyle = char.bodyColor;
+                ctx.strokeStyle = mainColor;
                 ctx.lineWidth = 12;
                 ctx.lineCap = 'round';
                 ctx.beginPath();
@@ -887,7 +1016,7 @@
                 ctx.stroke();
                 ctx.setLineDash([]);
             } else if (sil === 'gator') {
-                ctx.fillStyle = char.bodyColor;
+                ctx.fillStyle = mainColor;
                 ctx.beginPath();
                 ctx.moveTo(10, 10);
                 ctx.quadraticCurveTo(35, 20, 45, 15);
@@ -897,54 +1026,50 @@
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath(); ctx.ellipse(22, 10, 5, 3, 0.3, 0, Math.PI * 2); ctx.fill();
             } else if (sil === 'bear') {
-                ctx.fillStyle = char.bodyColor;
+                ctx.fillStyle = mainColor;
                 ctx.beginPath(); ctx.arc(22, 14, 5, 0, Math.PI * 2); ctx.fill();
             } else if (sil === 'cheetah') {
-                ctx.strokeStyle = char.bodyColor; ctx.lineWidth = 6; ctx.lineCap = 'round';
+                ctx.strokeStyle = mainColor; ctx.lineWidth = 6; ctx.lineCap = 'round';
                 ctx.beginPath(); ctx.moveTo(12, 12); ctx.quadraticCurveTo(38, 25, 32, -15); ctx.stroke();
             } else if (sil === 'tiger') {
-                ctx.strokeStyle = char.bodyColor; ctx.lineWidth = 9; ctx.lineCap = 'round';
+                ctx.strokeStyle = mainColor; ctx.lineWidth = 9; ctx.lineCap = 'round';
                 ctx.beginPath(); ctx.moveTo(12, 10); ctx.quadraticCurveTo(35, 15, 28, -20); ctx.stroke();
                 ctx.strokeStyle = '#331100'; ctx.lineWidth = 4;
                 ctx.beginPath(); ctx.moveTo(22, 2); ctx.lineTo(28, 8); ctx.stroke();
             } else {
-                ctx.strokeStyle = char.bodyColor;
+                ctx.strokeStyle = mainColor;
                 ctx.lineWidth = 8;
                 ctx.lineCap = 'round';
                 ctx.beginPath();
                 ctx.moveTo(10, 10);
                 ctx.quadraticCurveTo(30, 20, 35, -10);
                 ctx.stroke();
-                if (sil === 'lion') {
-                    ctx.fillStyle = '#663311';
-                    ctx.beginPath(); ctx.arc(35, -10, 7, 0, Math.PI * 2); ctx.fill();
-                }
             }
             ctx.restore();
 
-            ctx.fillStyle = char.bodyColor;
+            ctx.fillStyle = mainColor;
             ctx.beginPath();
             if (sil === 'penguin') {
                 ctx.fillStyle = '#f59e0b';
-                ctx.ellipse(-12 + walkCycle * 2, 24, 7, 3, 0, 0, Math.PI * 2);
-                ctx.ellipse(12 - walkCycle * 2, 24, 7, 3, 0, 0, Math.PI * 2);
+                ctx.ellipse(-14 + walkCycle * 2, 22, 9, 4, 0, 0, Math.PI * 2);
+                ctx.ellipse(14 - walkCycle * 2, 22, 9, 4, 0, 0, Math.PI * 2);
                 ctx.fill();
             } else if (sil === 'bear') {
-                ctx.ellipse(-16 + walkCycle * 2, 22, 11, 7, 0, 0, Math.PI * 2);
-                ctx.ellipse(16 - walkCycle * 2, 22, 11, 7, 0, 0, Math.PI * 2);
+                ctx.ellipse(-18 + walkCycle * 2, 20, 13, 8, 0, 0, Math.PI * 2);
+                ctx.ellipse(18 - walkCycle * 2, 20, 13, 8, 0, 0, Math.PI * 2);
                 ctx.fill();
             } else if (sil === 'deer') {
-                ctx.rect(-18 + walkCycle * 2, 18, 5, 12);
-                ctx.rect(13 - walkCycle * 2, 18, 5, 12);
+                ctx.rect(-20 + walkCycle * 2, 16, 6, 14);
+                ctx.rect(14 - walkCycle * 2, 16, 6, 14);
                 ctx.fill();
             } else {
-                ctx.ellipse(-18 + walkCycle * 2, 22, 9, 6, 0, 0, Math.PI * 2);
-                ctx.ellipse(18 - walkCycle * 2, 22, 9, 6, 0, 0, Math.PI * 2);
+                ctx.ellipse(-20 + walkCycle * 2, 20, 11, 7, 0, 0, Math.PI * 2);
+                ctx.ellipse(20 - walkCycle * 2, 20, 11, 7, 0, 0, Math.PI * 2);
                 ctx.fill();
             }
             drawLegSkin(ctx, legId);
 
-            ctx.fillStyle = char.bodyColor;
+            ctx.fillStyle = mainColor;
             ctx.beginPath();
             if (sil === 'penguin') {
                 ctx.ellipse(0, 6, 20, 24, 0, 0, Math.PI * 2);
@@ -980,21 +1105,7 @@
             }
             ctx.fill();
 
-            if (sil === 'gator') {
-                ctx.strokeStyle = '#88dd44'; ctx.lineWidth = 2;
-                ctx.beginPath(); ctx.moveTo(-8, 8); ctx.lineTo(8, 8); ctx.stroke();
-            } else if (sil === 'tiger' || sil === 'cheetah') {
-                ctx.fillStyle = '#331100';
-                ctx.fillRect(-18, 6, 6, 3); ctx.fillRect(12, 6, 6, 3);
-                if (sil === 'tiger') {
-                    ctx.fillRect(-14, 13, 8, 3); ctx.fillRect(6, 13, 8, 3);
-                }
-            } else if (sil === 'panda') {
-                ctx.fillStyle = '#ffffff';
-                ctx.beginPath(); ctx.arc(-10, 8, 6, 0, Math.PI * 2); ctx.arc(10, 8, 6, 0, Math.PI * 2); ctx.fill();
-            }
-
-            ctx.fillStyle = char.bodyColor;
+            ctx.fillStyle = mainColor;
             ctx.beginPath();
             if (sil === 'slime') {
                 ctx.arc(0, -6, 22, 0, Math.PI * 2);
@@ -1013,97 +1124,23 @@
             }
             ctx.fill();
 
-            if (sil === 'deer' || char.hasAntlers) {
-                ctx.strokeStyle = '#5c3a21'; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
-                ctx.beginPath();
-                ctx.moveTo(-10, -30); ctx.lineTo(-18, -46); ctx.lineTo(-24, -42);
-                ctx.moveTo(-14, -38); ctx.lineTo(-8, -44);
-                ctx.moveTo(10, -30); ctx.lineTo(18, -46); ctx.lineTo(24, -42);
-                ctx.moveTo(14, -38); ctx.lineTo(8, -44);
-                ctx.stroke();
-            }
-
             if (sil === 'bunny' || char.ears === 'long_lop') {
-                ctx.fillStyle = char.bodyColor;
+                ctx.fillStyle = mainColor;
                 ctx.beginPath();
                 ctx.ellipse(-14, -42, 6, 18, -0.3, 0, Math.PI * 2);
                 ctx.ellipse(14, -42, 6, 18, 0.3, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.fillStyle = '#fbcfe8';
-                ctx.beginPath();
-                ctx.ellipse(-14, -42, 3, 12, -0.3, 0, Math.PI * 2);
-                ctx.ellipse(14, -42, 3, 12, 0.3, 0, Math.PI * 2);
-                ctx.fill();
-            } else if (sil === 'owl' || char.ears === 'feather_horns') {
-                ctx.fillStyle = char.bodyColor;
-                ctx.beginPath();
-                ctx.moveTo(-22, -26); ctx.lineTo(-32, -42); ctx.lineTo(-12, -30);
-                ctx.moveTo(22, -26); ctx.lineTo(32, -42); ctx.lineTo(12, -30);
-                ctx.fill();
-            } else if (sil === 'kitty' || char.ears === 'kitty_ears') {
-                ctx.fillStyle = char.bodyColor;
-                ctx.beginPath();
-                ctx.moveTo(-24, -20); ctx.lineTo(-32, -40); ctx.lineTo(-10, -28);
-                ctx.moveTo(24, -20); ctx.lineTo(32, -40); ctx.lineTo(10, -28);
-                ctx.fill();
-                ctx.fillStyle = '#fbcfe8';
-                ctx.beginPath();
-                ctx.moveTo(-22, -24); ctx.lineTo(-28, -36); ctx.lineTo(-13, -27);
-                ctx.moveTo(22, -24); ctx.lineTo(28, -36); ctx.lineTo(13, -27);
-                ctx.fill();
-            } else if (sil === 'dragon' || char.ears === 'dragon_fins') {
-                ctx.fillStyle = '#facc15';
-                ctx.beginPath();
-                ctx.moveTo(-16, -32); ctx.lineTo(-26, -48); ctx.lineTo(-8, -32);
-                ctx.moveTo(16, -32); ctx.lineTo(26, -48); ctx.lineTo(8, -32);
-                ctx.fill();
-            } else if (sil === 'slime') {
-                ctx.strokeStyle = '#06b6d4'; ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.moveTo(0, -28); ctx.lineTo(0, -38); ctx.stroke();
-                ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(0, -40, 4, 0, Math.PI * 2); ctx.fill();
-            } else if (sil === 'phoenix') {
-                ctx.fillStyle = '#f59e0b';
-                ctx.beginPath();
-                ctx.moveTo(0, -32); ctx.lineTo(-10, -46); ctx.lineTo(10, -46); ctx.closePath();
-                ctx.fill();
-            } else if (sil === 'bear') {
-                ctx.fillStyle = char.bodyColor;
-                ctx.beginPath(); ctx.arc(-22, -30, 9, 0, Math.PI * 2); ctx.arc(22, -30, 9, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#fbcfe8';
-                ctx.beginPath(); ctx.arc(-22, -30, 4, 0, Math.PI * 2); ctx.arc(22, -30, 4, 0, Math.PI * 2); ctx.fill();
-            } else if (sil === 'deer') {
-                ctx.fillStyle = char.bodyColor;
-                ctx.beginPath(); ctx.ellipse(-24, -24, 10, 5, -0.4, 0, Math.PI * 2); ctx.ellipse(24, -24, 10, 5, 0.4, 0, Math.PI * 2); ctx.fill();
             } else if (char.ears === 'pointed' || char.ears === 'pointed_wolf' || char.ears === 'tufted') {
-                ctx.fillStyle = char.bodyColor;
+                ctx.fillStyle = mainColor;
                 ctx.beginPath();
                 ctx.moveTo(-24, -18); ctx.lineTo(-18, -38); ctx.lineTo(-6, -26); ctx.fill();
                 ctx.beginPath();
                 ctx.moveTo(24, -18); ctx.lineTo(18, -38); ctx.lineTo(6, -26); ctx.fill();
-                ctx.fillStyle = '#ffb3cc';
-                ctx.beginPath();
-                ctx.moveTo(-20, -20); ctx.lineTo(-17, -33); ctx.lineTo(-9, -25); ctx.fill();
-                ctx.beginPath();
-                ctx.moveTo(20, -20); ctx.lineTo(17, -33); ctx.lineTo(9, -25); ctx.fill();
-            } else if (char.ears === 'floppy_elephant') {
-                ctx.fillStyle = '#77aaee';
-                ctx.beginPath();
-                ctx.ellipse(-32, -12, 14, 20, -0.3, 0, Math.PI * 2);
-                ctx.ellipse(32, -12, 14, 20, 0.3, 0, Math.PI * 2);
-                ctx.fill();
             } else if (char.ears !== 'none') {
-                ctx.fillStyle = char.bodyColor;
+                ctx.fillStyle = mainColor;
                 ctx.beginPath();
                 ctx.arc(-20, -28, 10, 0, Math.PI * 2);
                 ctx.arc(20, -28, 10, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            if (char.hasMask || char.hasEyeMask || char.hasWolfMask || sil === 'panda' || sil === 'raccoon') {
-                ctx.fillStyle = sil === 'panda' ? '#0f172a' : '#222228';
-                ctx.beginPath();
-                ctx.ellipse(-12, -12, 11, 9, 0.2, 0, Math.PI * 2);
-                ctx.ellipse(12, -12, 11, 9, -0.2, 0, Math.PI * 2);
                 ctx.fill();
             }
 
@@ -1127,45 +1164,14 @@
                 ctx.fill();
             });
 
-            if (char.hasTrunk) {
-                ctx.fillStyle = char.bodyColor;
-                ctx.beginPath();
-                ctx.moveTo(-5, -6);
-                ctx.quadraticCurveTo(0, 15, 12, 10);
-                ctx.quadraticCurveTo(0, 5, -2, -6);
-                ctx.fill();
-            } else if (sil === 'penguin') {
-                ctx.fillStyle = '#f59e0b';
-                ctx.beginPath(); ctx.moveTo(-6, -10); ctx.lineTo(6, -10); ctx.lineTo(0, -3); ctx.closePath(); ctx.fill();
-            } else if (sil === 'bunny') {
-                ctx.fillStyle = '#fbcfe8';
-                ctx.beginPath(); ctx.arc(0, -6, 5, 0, Math.PI * 2); ctx.fill();
-            } else if (sil === 'owl') {
-                ctx.fillStyle = '#f59e0b';
-                ctx.beginPath(); ctx.moveTo(-4, -10); ctx.lineTo(4, -10); ctx.lineTo(0, -3); ctx.closePath(); ctx.fill();
-            } else if (sil === 'dragon') {
-                ctx.fillStyle = '#facc15';
-                ctx.beginPath(); ctx.arc(0, -6, 5, 0, Math.PI * 2); ctx.fill();
-            } else if (sil === 'deer') {
-                ctx.fillStyle = '#fff0e0';
-                ctx.beginPath(); ctx.ellipse(0, -6, 7, 5, 0, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#111111';
-                ctx.beginPath(); ctx.arc(0, -7, 2, 0, Math.PI * 2); ctx.fill();
-            } else if (sil === 'bear') {
-                ctx.fillStyle = '#ffe8d0';
-                ctx.beginPath(); ctx.ellipse(0, -4, 10, 7, 0, 0, Math.PI * 2); ctx.fill();
-                ctx.fillStyle = '#111111';
-                ctx.beginPath(); ctx.ellipse(0, -7, 4, 3, 0, 0, Math.PI * 2); ctx.fill();
-            } else {
-                ctx.fillStyle = char.bellyColor || '#ffffff';
-                ctx.beginPath();
-                ctx.ellipse(0, -6, 8, 6, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = sil === 'gator' ? '#225522' : '#221115';
-                ctx.beginPath();
-                ctx.ellipse(0, -8, 3.5, 2.5, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            ctx.fillStyle = char.bellyColor || '#ffffff';
+            ctx.beginPath();
+            ctx.ellipse(0, -6, 8, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#221115';
+            ctx.beginPath();
+            ctx.ellipse(0, -8, 3.5, 2.5, 0, 0, Math.PI * 2);
+            ctx.fill();
 
             drawAccessories(ctx, hatId, glassesId);
 
@@ -1453,6 +1459,7 @@
             lastHazardTriggeredHeight = 0;
             activeWeatherHazard = null;
             weatherHazardTimer = 0;
+            adContinuesRemaining = 2; // Reset ad continues counter on new game start[cite: 5]
             document.getElementById('weather-hud-banner').classList.add('hidden');
 
             if (selectedChar.id === 'turtle') player.hasShield = true;
@@ -1515,7 +1522,7 @@
 
         function spawnCloud(y) {
             const isPortrait = canvas.height > canvas.width;
-            const sizeMultiplier = isPortrait ? 0.78 : 1.0;
+            const sizeMultiplier = isPortrait ? 0.65 : 1.0; // Slightly smaller cloud size for mobile vertical gameplay
 
             const width = Math.floor((Math.random() * 40) + 80) * sizeMultiplier;
             const x = Math.random() * (canvas.width - width - 20) + 10;
@@ -1528,10 +1535,10 @@
             else if (rand < 0.47) { type = 'hazard'; color = '#ef4444'; }
             else if (rand < 0.57) { type = 'bouncy'; color = '#ff99ff'; }
             else if (rand < 0.67) { type = 'fragile'; color = '#fcd34d'; }
-            else if (rand < 0.76) { type = 'portal'; color = '#c084fc'; }
-            else if (rand < 0.83) { type = 'rainbow'; color = '#ec4899'; }
-            else if (rand < 0.89) { type = 'ghost'; color = '#cbd5e1'; }
-            else if (rand < 0.95) { type = 'teleporter'; color = '#38bdf8'; }
+            else if (rand < 0.72) { type = 'portal'; color = '#c084fc'; } // Reduced portal probability from 0.76 to 0.72[cite: 5]
+            else if (rand < 0.81) { type = 'rainbow'; color = '#ec4899'; }
+            else if (rand < 0.87) { type = 'ghost'; color = '#cbd5e1'; }
+            else if (rand < 0.94) { type = 'teleporter'; color = '#38bdf8'; }
             else { type = 'starcluster'; color = '#facc15'; }
 
             clouds.push({
@@ -1643,6 +1650,7 @@
                 localStorage.setItem('cloud_jumper_max_score', highScore);
             }
             document.getElementById('high-score-text').innerText = `Best Record: ${highScore} m`;
+            document.getElementById('continue-ad-wrapper').classList.add('hidden');
             document.getElementById('gameover-overlay').classList.remove('hidden');
             document.getElementById('boss-hud').classList.add('hidden');
             document.getElementById('weather-hud-banner').classList.add('hidden');
@@ -1651,7 +1659,7 @@
         function gameOver() {
             if (selectedChar.id === 'phoenix' && player.hp <= 0 && !player.phoenixRevived) {
                 player.phoenixRevived = true;
-                player.hp = 1;
+                player.hp = selectedChar.id === 'galaxy_phoenix' ? 5 : 1;
                 player.vy = -18;
                 updateHealthDisplay();
                 createSparkles(player.x, player.y, '#fbbf24', 30);
@@ -1670,9 +1678,37 @@
                 localStorage.setItem('cloud_jumper_max_score', highScore);
             }
             document.getElementById('high-score-text').innerText = `Best Record: ${highScore} m`;
+
+            // Update ad continue button visibility and count[cite: 5]
+            const adWrapper = document.getElementById('continue-ad-wrapper');
+            if (adContinuesRemaining > 0) {
+                adWrapper.classList.remove('hidden');
+                document.getElementById('ad-continues-left').innerText = adContinuesRemaining;
+            } else {
+                adWrapper.classList.add('hidden');
+            }
+
             document.getElementById('gameover-overlay').classList.remove('hidden');
             document.getElementById('boss-hud').classList.add('hidden');
             document.getElementById('weather-hud-banner').classList.add('hidden');
+        }
+
+        // Continue game via Ad View (up to 2 times per session for both modes)[cite: 5]
+        function continueWithAd() {
+            if (adContinuesRemaining <= 0) return;
+            adContinuesRemaining--;
+
+            sound.playPowerup();
+            player.hp = 3; // Restore 3 HP
+            player.vy = -18; // Give an upward boost
+            player.invulnerableTimer = 180; // 3 seconds invulnerability
+            updateHealthDisplay();
+
+            document.getElementById('gameover-overlay').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+            gameState = 'PLAYING';
+            hasActiveGame = true;
+            createSparkles(player.x, player.y, '#facc15', 30);
         }
 
         function update() {
@@ -1748,7 +1784,7 @@
                 if (Math.abs(diff) > 8) moveDir = diff > 0 ? 1 : -1;
             }
 
-            if (activeWeatherHazard === 'wind_storm' && selectedChar.id !== 'owl') {
+            if (activeWeatherHazard === 'wind_storm' && selectedChar.id !== 'owl' && selectedChar.id !== 'electric_owl') {
                 moveDir += Math.sin(animFrameCounter * 0.1) * 0.8; 
             }
 
@@ -1757,14 +1793,14 @@
                 moveDir *= -1;
             }
 
-            let horizontalSpeedMultiplier = selectedChar.id === 'fox' || selectedChar.id === 'cheetah' ? 9.2 : 7.5;
+            let horizontalSpeedMultiplier = selectedChar.id === 'fox' || selectedChar.id === 'cheetah' || selectedChar.id === 'laser_cheetah' ? 9.2 : 7.5;
             player.vx = moveDir * horizontalSpeedMultiplier;
             player.x += player.vx;
 
             if (player.x < -player.radius) player.x = canvas.width + player.radius;
             if (player.x > canvas.width + player.radius) player.x = -player.radius;
 
-            const gravity = player.slowMoTimer > 0 ? 0.22 : (activeWeatherHazard === 'lightning_storm' ? 0.52 : (selectedChar.id === 'lion' ? 0.38 : 0.44));
+            const gravity = player.slowMoTimer > 0 ? 0.22 : ((activeWeatherHazard === 'lightning_storm' && selectedChar.id !== 'electric_owl') ? 0.52 : (selectedChar.id === 'lion' ? 0.38 : 0.44));
             player.vy += gravity;
             player.y += player.vy;
             player.squish += (1 - player.squish) * 0.12;
@@ -1778,18 +1814,18 @@
             targetCameraY = player.y - canvas.height * 0.52;
             cameraY += (targetCameraY - cameraY) * 0.1;
 
-            if (activeWeatherHazard === 'lightning_storm' && Math.random() < 0.015 && player.invulnerableTimer === 0) {
+            if (activeWeatherHazard === 'lightning_storm' && selectedChar.id !== 'electric_owl' && Math.random() < 0.015 && player.invulnerableTimer === 0) {
                 if (selectedChar.id === 'ghost' && !player.ghostHazardUsed) {
                     player.ghostHazardUsed = true;
                 } else {
                     sound.playHazard();
                     if (player.hasShield) {
                         player.hasShield = false;
-                        player.invulnerableTimer = 60;
+                        player.invulnerableTimer = 180; // 3 seconds invulnerability
                         createSparkles(player.x, player.y, '#38bdf8', 18);
                     } else {
                         player.hp--;
-                        player.invulnerableTimer = 60;
+                        player.invulnerableTimer = 180; // 3 seconds invulnerability
                         updateHealthDisplay();
                         createSparkles(player.x, player.y, '#ef4444', 15);
                         if (player.hp <= 0) {
@@ -1829,13 +1865,13 @@
                         if (player.hasShield) {
                             player.hasShield = false;
                             player.vy = -16;
-                            player.invulnerableTimer = 60;
+                            player.invulnerableTimer = 180; // 3 seconds invulnerability
                             createSparkles(player.x, player.y, '#38bdf8', 18);
                         } else {
                             sound.playHazard();
-                            let damageTaken = selectedChar.id === 'dragon' ? 0.85 : 1;
+                            let damageTaken = selectedChar.id === 'dragon' || selectedChar.id === 'holo_dragon' ? 0.85 : 1;
                             player.hp -= damageTaken;
-                            player.invulnerableTimer = 60;
+                            player.invulnerableTimer = 180; // 3 seconds invulnerability
                             updateHealthDisplay();
                             player.vy = -12;
                             createSparkles(player.x, player.y, '#ef4444', 15);
@@ -1914,13 +1950,13 @@
                     if (player.hasShield) {
                         player.hasShield = false;
                         player.vy = -16;
-                        player.invulnerableTimer = 60;
+                        player.invulnerableTimer = 180; // 3 seconds invulnerability
                         createSparkles(player.x, player.y, '#38bdf8', 18);
                     } else {
                         sound.playHazard();
-                        let damageTaken = selectedChar.id === 'dragon' ? 0.85 : 1;
+                        let damageTaken = selectedChar.id === 'dragon' || selectedChar.id === 'holo_dragon' ? 0.85 : 1;
                         player.hp -= damageTaken;
-                        player.invulnerableTimer = 60;
+                        player.invulnerableTimer = 180; // 3 seconds invulnerability
                         updateHealthDisplay();
                         player.vy = -14;
                         createSparkles(player.x, player.y, '#ef4444', 15);
@@ -1954,14 +1990,13 @@
                                 if (player.hasShield) {
                                     player.hasShield = false;
                                     player.vy = -16;
-                                    player.invulnerableTimer = 60;
+                                    player.invulnerableTimer = 180; // 3 seconds invulnerability
                                     cloud.broken = true;
                                     createSparkles(player.x, player.y, '#38bdf8', 18);
                                 } else {
                                     player.hp--;
-                                    player.invulnerableTimer = 60;
+                                    player.invulnerableTimer = 180; // 3 seconds invulnerability
                                     updateHealthDisplay();
-                                    player.vy = -14;
                                     createSparkles(player.x, player.y, '#ef4444', 15);
                                     cloud.broken = true;
                                     if (player.hp <= 0) {
@@ -2073,10 +2108,11 @@
                         sessionItemsCollected++;
                         checkQuestsAndAchievements();
 
+                        let scoreMultiplier = selectedChar.id === 'rainbow_glider' ? 2 : 1;
                         if (selectedChar.id === 'squirrel') score += 10;
 
                         if (item.type === 'star') {
-                            score += 25;
+                            score += 25 * scoreMultiplier;
                             sound.playCollect();
                             createSparkles(item.x, item.y, '#ffea00');
                         } else if (item.type === 'shield') {
@@ -2097,7 +2133,7 @@
                             sound.playPowerup();
                             createSparkles(item.x, item.y, '#38bdf8', 14);
                         } else if (item.type === 'star_shower') {
-                            score += 150;
+                            score += 150 * scoreMultiplier;
                             sound.playCollect();
                             createSparkles(item.x, item.y, '#facc15', 25);
                         } else if (item.type === 'time_freeze') {
@@ -2110,7 +2146,7 @@
                             sound.playPowerup();
                             createSparkles(item.x, item.y, '#f472b6', 18);
                         } else if (item.type === 'double_score') {
-                            score += 200;
+                            score += 200 * scoreMultiplier;
                             sound.playPowerup();
                             createSparkles(item.x, item.y, '#fbbf24', 20);
                         } else if (item.type === 'cloud_bomb') {
@@ -2242,7 +2278,7 @@
         function drawWeatherEffectsOverlay() {
             if (!activeWeatherHazard) return;
             ctx.save();
-            if (activeWeatherHazard === 'dense_fog' && selectedChar.id !== 'owl') {
+            if (activeWeatherHazard === 'dense_fog' && selectedChar.id !== 'owl' && selectedChar.id !== 'electric_owl') {
                 ctx.fillStyle = 'rgba(200, 210, 225, 0.45)';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             } else if (activeWeatherHazard === 'wind_storm') {
@@ -2616,6 +2652,12 @@
             const renderY = player.y - cameraY;
             ctx.save();
             ctx.translate(player.x, renderY);
+
+            // Flashing effect during invulnerability (3 seconds)
+            if (player.invulnerableTimer > 0 && Math.floor(animFrameCounter / 6) % 2 === 0) {
+                ctx.globalAlpha = 0.4;
+            }
+
             drawFullBodyCharacter(ctx, selectedChar, 1.0, animFrameCounter, player.squish, selectedHat.id, selectedGlasses.id, selectedLeg.id);
 
             if (player.hasShield) {
@@ -2652,4 +2694,3 @@
     </script>
 </body>
 </html>
-```[cite: 5]
